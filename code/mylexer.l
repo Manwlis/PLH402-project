@@ -11,74 +11,80 @@
 /***********************/
 
 /***** keywords *****/
-KEYWORD_INT		"int"
-KEYWORD_REAL	"real"
-KEYWORD_BOOL	"bool"
-KEYWORD_STRING	"string"
-KEYWORD_IF		"if"
-KEYWORD_ELSE	"else"
-KEYWORD_FI		"fi"
-KEYWORD_WHILE	"while"
-KEYWORD_LOOP	"loop"
-KEYWORD_POOL	"pool"
-KEYWORD_CONST	"const"
-KEYWORD_LET		"let"
-KEYWORD_BREAK	"break"
-KEYWORD_RETURN	"return"
-KEYWORD_START	"start"
+KEYWORD_INT				"int"
+KEYWORD_REAL			"real"
+KEYWORD_BOOL			"bool"
+KEYWORD_STRING			"string"
+KEYWORD_IF				"if"
+KEYWORD_ELSE			"else"
+KEYWORD_FI				"fi"
+KEYWORD_WHILE			"while"
+KEYWORD_LOOP			"loop"
+KEYWORD_POOL			"pool"
+KEYWORD_CONST			"const"
+KEYWORD_LET				"let"
+KEYWORD_BREAK			"break"
+KEYWORD_RETURN			"return"
+KEYWORD_START			"start"
 
 
 /***** operators *****/
 /* arithmetic */
-ADD_OP				"+"
-SUBTRACT_OP			"-"
-MULTIPLY_OP		"*"
-DIVIDE_OP			"/"
+ADD_OP					"+"
+SUBTRACT_OP				"-"
+MULTIPLY_OP				"*"
+DIVIDE_OP				"/"
 /* ???????????????? */
-MOD_OP				"%"
+MOD_OP					"%"
 /* relational */
-EQUAL_OP			"="
-DIFFERENT_OP		"!="
-LESS_OP				"<"
-EQUAL_LESS_OP		"<="
+EQUAL_OP				"="
+DIFFERENT_OP			"!="
+LESS_OP					"<"
+EQUAL_LESS_OP			"<="
 /* logical */
-AND_OP				"and"
-OR_OP				"or"
-NOT_OP				"not"
+AND_OP					"and"
+OR_OP					"or"
+NOT_OP					"not"
 /* sign */
 /* ???????????????? */
-POSITIVE_OP			"+"
-NEGATIVE_OP			"-"
+POSITIVE_OP				"+"
+NEGATIVE_OP				"-"
 /* delimeters */
-ASSIGN_OP			"<-"
-COLON				":"
-SEMICOLON			";"
-COMMA				","
-LEFT_PARENTHESIS	"("
-RIGHT_PARENTHESIS	")"
-LEFT_BRACKET		"["
-RIGHT_BRACKET		"]"
-LEFT_CURLY_BRACKET	"{"
-RIGHT_CURLY_BRACKET	"}"
+ASSIGN_OP				"<-"
+COLON					":"
+SEMICOLON				";"
+COMMA					","
+LEFT_PARENTHESIS		"("
+RIGHT_PARENTHESIS		")"
+LEFT_BRACKET			"["
+RIGHT_BRACKET			"]"
+LEFT_CURLY_BRACKET		"{"
+RIGHT_CURLY_BRACKET		"}"
 
-ARROW_OP			"=>"
+ARROW_OP				"=>"
 
 
 /* ids */
-IDENTIFIER			[a-zA-Z][0-9a-zA-Z_]*
+IDENTIFIER				[a-zA-Z][0-9a-zA-Z_]*
 
 /* values */
-POS_INT				([0])|([1-9][0-9]*)
-POS_REAL			{POS_INT}"."[0-9]+([eE][-+]?[1-9][0-9]*)?
-BOOLEAN				"true"|"false"
+POS_INT					([0])|([1-9][0-9]*)
+POS_REAL				{POS_INT}"."[0-9]+([eE][-+]?[1-9][0-9]*)?
+BOOLEAN					"true"|"false"
+
+/* starts with reduntant zero */
+ILLEGAL_FORMAT_INT		[0][0-9]+
+/* starts with reduntant zero | no int part | no decimal part | reduntant zero on exponential part | no exponential part */
+ILLEGAL_FORMAT_REAL		({ILLEGAL_FORMAT_INT}|{POS_INT})?"."[0-9]*([eE][-+]?({ILLEGAL_FORMAT_INT}|{POS_INT})?)?
 
 /* string */
-CONST_STRING		"\"".+"\""
+CONST_STRING			"\"".+"\""
 
 /***** comments *****/
-LINE_COMM	"--"
+LINE_COMM				"--"
 
-
+COMMENT_START			"(*"
+COMMENT_END				"*)"
 
 %%
 	/*********************/
@@ -141,16 +147,31 @@ LINE_COMM	"--"
 	/* ???????????????? */
 {ARROW_OP}												{ printf("Line %d: Token ARROW_OP:                 %s\n", lineNum, yytext); }
 
+	/***** values, ids, strings *****/
 {POS_INT}												{ printf("Line %d: Token CONST_INT:                %s\n", lineNum, yytext); }
 {POS_REAL}												{ printf("Line %d: Token CONST_REAL:               %s\n", lineNum, yytext); }
 {BOOLEAN}												{ printf("Line %d: Token BOOLEAN:                  %s\n", lineNum, yytext); }
 
-{IDENTIFIER}											{ printf("Line %d: Token IDENTIFIER:               %s\n", lineNum, yytext); }
+{ILLEGAL_FORMAT_INT}									{ printf("\nSyntax error in line %d:                  %s\n(Wrong integer format)\n\n", lineNum, yytext); }
+{ILLEGAL_FORMAT_REAL}									{ printf("\nSyntax error in line %d:                  %s\n(Wrong real format)\n\n", lineNum, yytext); }
 
-{CONST_STRING}											{ printf("Line %d: Token CONST_STRING:             %s\n", lineNum, yytext); }
+{IDENTIFIER}											{ printf("Line %d: Token IDENTIFIER:                %s\n", lineNum, yytext); }
 
-	/* TO_DO block comments */
-{LINE_COMM}[^\n]* 										 printf("Line %d: line comment:                    %s\n", lineNum, yytext); /* eat line comments */
+{CONST_STRING}											{ printf("Line %d: Token CONST_STRING:              %s\n", lineNum, yytext); }
+
+	/* fwliasmena sxwlia */
+{COMMENT_START}.*{COMMENT_START}.*{COMMENT_END}.*{COMMENT_END} {
+	{ printf("\nSyntax error in line %d:                  %s\n(nested comments)\n\n", lineNum, yytext); }
+}
+
+	/* or8a sxolia */
+{LINE_COMM}.* 											{ printf("Line %d: line comment:                    %s\n", lineNum, yytext); }
+{COMMENT_START}.*{COMMENT_END}							{ printf("Line %d: block comment:                   %s\n", lineNum, yytext); }
+
+	/* comment errors */ /* oi ekfraseis einai la8ws alla logo proteraiwthtas tou allou kanona douleuoun */
+{COMMENT_START}.*										{ printf("\nSyntax error in line %d:                  %s\n(comment doesn't end)\n\n", lineNum, yytext); }
+.*{COMMENT_END}											{ printf("\nSyntax error in line %d:                  %s\n(comment doesn't start)\n\n", lineNum, yytext); }
+
 
 [ \r\t\\]+	/* skip whitespaces */
 
@@ -173,6 +194,5 @@ LINE_COMM	"--"
 int main ()
 {
 	int token;
-	while ( (token = yylex()) != EOF )
-		printf("Line %d Token %d: %s\n", lineNum, token, yytext);
+	while ( (token = yylex()) != EOF ){}
 }

@@ -1,4 +1,13 @@
 (* right comment *)
-(* comment doesn't close
 comment doesn't start *)
 (* nested (* comments *) error *)
+(* comment *) extra end *)
+
+(* multi
+*  line
+   comment
+*)
+
+(* comment 
+doesn't
+ close

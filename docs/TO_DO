@@ -1,0 +1,19 @@
+ pros8esh afairesh / 8etiko arnitiko
+na rwthsw gia ta nested sxwlia
+ strings
+
+na metatrapei se strings
+	/* adespoto telos sxoliou */
+[^\n|^"(*"]*{COMMENT_END}						{ printf("\nSyntax error in line %d:                  %s\n(comment doesn't start)\n\n", lineNum, yytext); syntax_correct = 0; }
+
+{LINE_COMM}.* 									{ printf("Line %d: line comment:                    %s\n", lineNum, yytext); }
+{COMMENT_START}									{ BEGIN(comment); yymore(); }
+<comment>[^*\n]*								{ yymore(); }
+	/* comment errors */
+<comment>\n {
+		BEGIN(INITIAL);
+		printf("\nSyntax error in line %d:                  %s(comment doesn't end)\n\n", lineNum, yytext);
+		++lineNum;
+		syntax_correct = 0;
+	}
+<comment>{COMMENT_END}							{ BEGIN(INITIAL); printf("Line %d: block comment:                    %s\n", lineNum, yytext); }

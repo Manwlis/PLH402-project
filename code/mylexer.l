@@ -3,12 +3,15 @@
 	#include <stdio.h>
 
 	int lineNum = 1;
+	int comment_start_line = 1;
+	int syntax_correct = 1;
 %}
 
 
 /***********************/
 /***** definitions *****/
 /***********************/
+
 
 /***** keywords *****/
 KEYWORD_INT				"int"
@@ -67,24 +70,27 @@ ARROW_OP				"=>"
 /* ids */
 IDENTIFIER				[a-zA-Z][0-9a-zA-Z_]*
 
-/* values */
+
+/***** values *****/
 POS_INT					([0])|([1-9][0-9]*)
 POS_REAL				{POS_INT}"."[0-9]+([eE][-+]?[1-9][0-9]*)?
 BOOLEAN					"true"|"false"
-
 /* starts with reduntant zero */
 ILLEGAL_FORMAT_INT		[0][0-9]+
 /* starts with reduntant zero | no int part | no decimal part | reduntant zero on exponential part | no exponential part */
 ILLEGAL_FORMAT_REAL		({ILLEGAL_FORMAT_INT}|{POS_INT})?"."[0-9]*([eE][-+]?({ILLEGAL_FORMAT_INT}|{POS_INT})?)?
 
-/* string */
-CONST_STRING			"\"".+"\""
+
+/***** string *****/
+STRING_START			"\""
+
 
 /***** comments *****/
 LINE_COMM				"--"
-
 COMMENT_START			"(*"
 COMMENT_END				"*)"
+%x comment
+
 
 %%
 	/*********************/
@@ -92,98 +98,110 @@ COMMENT_END				"*)"
 	/*********************/
 
 	/* TO_DO na bgalw ta lines */
-	/* TO_DO isws prepei na feigoun ta \" */
 
-	/* mono ean akolou8ountai apo eidikous xarakthres */ 
 	/***** keywords *****/
-{KEYWORD_INT}											{ printf("Line %d: Token KEYWORD_INT:              %s\n", lineNum, yytext); }
-{KEYWORD_REAL}											{ printf("Line %d: Token KEYWORD_REAL:             %s\n", lineNum, yytext); }
-{KEYWORD_BOOL}											{ printf("Line %d: Token KEYWORD_BOOL:             %s\n", lineNum, yytext); }
-{KEYWORD_STRING}										{ printf("Line %d: Token KEYWORD_STRING:           %s\n", lineNum, yytext); }
-{KEYWORD_IF}											{ printf("Line %d: Token KEYWORD_IF:               %s\n", lineNum, yytext); }
-{KEYWORD_ELSE}											{ printf("Line %d: Token KEYWORD_ELSE:             %s\n", lineNum, yytext); }
-{KEYWORD_FI}											{ printf("Line %d: Token KEYWORD_FI:               %s\n", lineNum, yytext); }
-{KEYWORD_WHILE}											{ printf("Line %d: Token KEYWORD_WHILE:            %s\n", lineNum, yytext); }
-{KEYWORD_LOOP}											{ printf("Line %d: Token KEYWORD_LOOP:             %s\n", lineNum, yytext); }
-{KEYWORD_POOL}											{ printf("Line %d: Token KEYWORD_POOL:             %s\n", lineNum, yytext); }
-{KEYWORD_CONST}											{ printf("Line %d: Token KEYWORD_CONST:            %s\n", lineNum, yytext); }
-{KEYWORD_LET}											{ printf("Line %d: Token KEYWORD_LET:              %s\n", lineNum, yytext); }
-{KEYWORD_BREAK}											{ printf("Line %d: Token KEYWORD_BREAK:            %s\n", lineNum, yytext); }
-{KEYWORD_RETURN}										{ printf("Line %d: Token KEYWORD_RETURN:           %s\n", lineNum, yytext); }
-{KEYWORD_START}											{ printf("Line %d: Token KEYWORD_START:            %s\n", lineNum, yytext); }
+{KEYWORD_INT}									{ printf("Line %d: Token KEYWORD_INT:              %s\n", lineNum, yytext); }
+{KEYWORD_REAL}									{ printf("Line %d: Token KEYWORD_REAL:             %s\n", lineNum, yytext); }
+{KEYWORD_BOOL}									{ printf("Line %d: Token KEYWORD_BOOL:             %s\n", lineNum, yytext); }
+{KEYWORD_STRING}								{ printf("Line %d: Token KEYWORD_STRING:           %s\n", lineNum, yytext); }
+{KEYWORD_IF}									{ printf("Line %d: Token KEYWORD_IF:               %s\n", lineNum, yytext); }
+{KEYWORD_ELSE}									{ printf("Line %d: Token KEYWORD_ELSE:             %s\n", lineNum, yytext); }
+{KEYWORD_FI}									{ printf("Line %d: Token KEYWORD_FI:               %s\n", lineNum, yytext); }
+{KEYWORD_WHILE}									{ printf("Line %d: Token KEYWORD_WHILE:            %s\n", lineNum, yytext); }
+{KEYWORD_LOOP}									{ printf("Line %d: Token KEYWORD_LOOP:             %s\n", lineNum, yytext); }
+{KEYWORD_POOL}									{ printf("Line %d: Token KEYWORD_POOL:             %s\n", lineNum, yytext); }
+{KEYWORD_CONST}									{ printf("Line %d: Token KEYWORD_CONST:            %s\n", lineNum, yytext); }
+{KEYWORD_LET}									{ printf("Line %d: Token KEYWORD_LET:              %s\n", lineNum, yytext); }
+{KEYWORD_BREAK}									{ printf("Line %d: Token KEYWORD_BREAK:            %s\n", lineNum, yytext); }
+{KEYWORD_RETURN}								{ printf("Line %d: Token KEYWORD_RETURN:           %s\n", lineNum, yytext); }
+{KEYWORD_START}									{ printf("Line %d: Token KEYWORD_START:            %s\n", lineNum, yytext); }
+
 
 	/***** operators *****/
 	/* arithmetic */
-{ADD_OP}												{ printf("Line %d: Token ADD_OP:                   %s\n", lineNum, yytext); }
-{SUBTRACT_OP}											{ printf("Line %d: Token SUBTRACT_OP:              %s\n", lineNum, yytext); }
-{MULTIPLY_OP}											{ printf("Line %d: Token MULTIPLY_OP:              %s\n", lineNum, yytext); }
-{DIVIDE_OP}												{ printf("Line %d: Token DIVIDE_OP:                %s\n", lineNum, yytext); }
+{ADD_OP}										{ printf("Line %d: Token ADD_OP:                   %s\n", lineNum, yytext); }
+{SUBTRACT_OP}									{ printf("Line %d: Token SUBTRACT_OP:              %s\n", lineNum, yytext); }
+{MULTIPLY_OP}									{ printf("Line %d: Token MULTIPLY_OP:              %s\n", lineNum, yytext); }
+{DIVIDE_OP}										{ printf("Line %d: Token DIVIDE_OP:                %s\n", lineNum, yytext); }
 	/* ???????????????? */
-{MOD_OP}												{ printf("Line %d: Token MOD_OP:                   %s\n", lineNum, yytext); }
+{MOD_OP}										{ printf("Line %d: Token MOD_OP:                   %s\n", lineNum, yytext); }
 	/* relational */
-{EQUAL_OP}												{ printf("Line %d: Token EQUAL_OP:                 %s\n", lineNum, yytext); }
-{DIFFERENT_OP}											{ printf("Line %d: Token DIFFERENT_OP:             %s\n", lineNum, yytext); }
-{LESS_OP}												{ printf("Line %d: Token LESS_OP:                  %s\n", lineNum, yytext); }
-{EQUAL_LESS_OP}											{ printf("Line %d: Token EQUAL_LESS_OP:            %s\n", lineNum, yytext); }
+{EQUAL_OP}										{ printf("Line %d: Token EQUAL_OP:                 %s\n", lineNum, yytext); }
+{DIFFERENT_OP}									{ printf("Line %d: Token DIFFERENT_OP:             %s\n", lineNum, yytext); }
+{LESS_OP}										{ printf("Line %d: Token LESS_OP:                  %s\n", lineNum, yytext); }
+{EQUAL_LESS_OP}									{ printf("Line %d: Token EQUAL_LESS_OP:            %s\n", lineNum, yytext); }
 	/* logical */
-{AND_OP}												{ printf("Line %d: Token AND_OP:                   %s\n", lineNum, yytext); }
-{OR_OP}													{ printf("Line %d: Token OR_OP:                    %s\n", lineNum, yytext); }
-{NOT_OP}												{ printf("Line %d: Token NOT_OP:                   %s\n", lineNum, yytext); }
+{AND_OP}										{ printf("Line %d: Token AND_OP:                   %s\n", lineNum, yytext); }
+{OR_OP}											{ printf("Line %d: Token OR_OP:                    %s\n", lineNum, yytext); }
+{NOT_OP}										{ printf("Line %d: Token NOT_OP:                   %s\n", lineNum, yytext); }
 	/* sign */
-	/* ???????????????????????????????????????????????????????????????? */
-{POSITIVE_OP}/({POS_INT}|{POS_REAL}|{IDENTIFIER})		{ printf("Line %d: Token POSITIVE_OP:              %s\n", lineNum, yytext); }
-{NEGATIVE_OP}/({POS_INT}|{POS_REAL}|{IDENTIFIER})		{ printf("Line %d: Token NEGATIVE_OP:              %s\n", lineNum, yytext); }
+	/* ???????????????????????????????????????????????????????????????? TO_DO na ta ftiaksw swsta*/
+{POSITIVE_OP}/({POS_INT}|{POS_REAL}|{IDENTIFIER}) {
+		printf("Line %d: Token POSITIVE_OP:              %s\n", lineNum, yytext);
+	}
+{NEGATIVE_OP}/({POS_INT}|{POS_REAL}|{IDENTIFIER}) {
+		printf("Line %d: Token NEGATIVE_OP:              %s\n", lineNum, yytext);
+	}
 	/* delimeters */
-{ASSIGN_OP}												{ printf("Line %d: Token ASSIGN_OP:                %s\n", lineNum, yytext); }
-{COLON}													{ printf("Line %d: Token COLON:                    %s\n", lineNum, yytext); }
-{SEMICOLON}												{ printf("Line %d: Token SEMICOLON:                %s\n", lineNum, yytext); }
-{COMMA}													{ printf("Line %d: Token COMMA:                    %s\n", lineNum, yytext); }
-{LEFT_PARENTHESIS}										{ printf("Line %d: Token LEFT_PARENTHESIS:         %s\n", lineNum, yytext); }
-{RIGHT_PARENTHESIS}										{ printf("Line %d: Token RIGHT_PARENTHESIS:        %s\n", lineNum, yytext); }
-{LEFT_BRACKET}											{ printf("Line %d: Token LEFT_BRACKET:             %s\n", lineNum, yytext); }
-{RIGHT_BRACKET}											{ printf("Line %d: Token RIGHT_BRACKET:            %s\n", lineNum, yytext); }
-{LEFT_CURLY_BRACKET}									{ printf("Line %d: Token LEFT_CURLY_BRACKET:       %s\n", lineNum, yytext); }
-{RIGHT_CURLY_BRACKET}									{ printf("Line %d: Token RIGHT_CURLY_BRACKET:      %s\n", lineNum, yytext); }
+{ASSIGN_OP}										{ printf("Line %d: Token ASSIGN_OP:                %s\n", lineNum, yytext); }
+{COLON}											{ printf("Line %d: Token COLON:                    %s\n", lineNum, yytext); }
+{SEMICOLON}										{ printf("Line %d: Token SEMICOLON:                %s\n", lineNum, yytext); }
+{COMMA}											{ printf("Line %d: Token COMMA:                    %s\n", lineNum, yytext); }
+{LEFT_PARENTHESIS}								{ printf("Line %d: Token LEFT_PARENTHESIS:         %s\n", lineNum, yytext); }
+{RIGHT_PARENTHESIS}								{ printf("Line %d: Token RIGHT_PARENTHESIS:        %s\n", lineNum, yytext); }
+{LEFT_BRACKET}									{ printf("Line %d: Token LEFT_BRACKET:             %s\n", lineNum, yytext); }
+{RIGHT_BRACKET}									{ printf("Line %d: Token RIGHT_BRACKET:            %s\n", lineNum, yytext); }
+{LEFT_CURLY_BRACKET}							{ printf("Line %d: Token LEFT_CURLY_BRACKET:       %s\n", lineNum, yytext); }
+{RIGHT_CURLY_BRACKET}							{ printf("Line %d: Token RIGHT_CURLY_BRACKET:      %s\n", lineNum, yytext); }
 	/* ???????????????? */
-{ARROW_OP}												{ printf("Line %d: Token ARROW_OP:                 %s\n", lineNum, yytext); }
+{ARROW_OP}										{ printf("Line %d: Token ARROW_OP:                 %s\n", lineNum, yytext); }
 
-	/***** values, ids, strings *****/
-{POS_INT}												{ printf("Line %d: Token CONST_INT:                %s\n", lineNum, yytext); }
-{POS_REAL}												{ printf("Line %d: Token CONST_REAL:               %s\n", lineNum, yytext); }
-{BOOLEAN}												{ printf("Line %d: Token BOOLEAN:                  %s\n", lineNum, yytext); }
 
-{ILLEGAL_FORMAT_INT}									{ printf("\nSyntax error in line %d:                  %s\n(Wrong integer format)\n\n", lineNum, yytext); }
-{ILLEGAL_FORMAT_REAL}									{ printf("\nSyntax error in line %d:                  %s\n(Wrong real format)\n\n", lineNum, yytext); }
+	/***** values, ids *****/
+{POS_INT}										{ printf("Line %d: Token CONST_INT:                %s\n", lineNum, yytext); }
+{POS_REAL}										{ printf("Line %d: Token CONST_REAL:               %s\n", lineNum, yytext); }
+{BOOLEAN}										{ printf("Line %d: Token BOOLEAN:                  %s\n", lineNum, yytext); }
 
-{IDENTIFIER}											{ printf("Line %d: Token IDENTIFIER:                %s\n", lineNum, yytext); }
+{ILLEGAL_FORMAT_INT}							{ printf("\nSyntax error in line %d:                  %s\n(Wrong integer format)\n\n", lineNum, yytext); syntax_correct = 0; }
+{ILLEGAL_FORMAT_REAL}							{ printf("\nSyntax error in line %d:                  %s\n(Wrong real format)\n\n", lineNum, yytext); syntax_correct = 0; }
 
-{CONST_STRING}											{ printf("Line %d: Token CONST_STRING:              %s\n", lineNum, yytext); }
+{IDENTIFIER}									{ printf("Line %d: Token IDENTIFIER:                %s\n", lineNum, yytext); }
 
+
+	/***** strings *****/
+	/*{CONST_STRING}									{ printf("Line %d: Token CONST_STRING:              %s\n", lineNum, yytext); }*/
+
+
+	/***** comments *****/
 	/* fwliasmena sxwlia */
 {COMMENT_START}.*{COMMENT_START}.*{COMMENT_END}.*{COMMENT_END} {
 	{ printf("\nSyntax error in line %d:                  %s\n(nested comments)\n\n", lineNum, yytext); }
 }
+	/* adespoto telos sxoliou */
+[^\n|^"(*"]*{COMMENT_END}						{ printf("\nSyntax error in line %d:                  %s\n(comment doesn't start)\n\n", lineNum, yytext); syntax_correct = 0; }
 
-	/* or8a sxolia */
-{LINE_COMM}.* 											{ printf("Line %d: line comment:                    %s\n", lineNum, yytext); }
-{COMMENT_START}.*{COMMENT_END}							{ printf("Line %d: block comment:                   %s\n", lineNum, yytext); }
+{LINE_COMM}.* 									{ printf("Line %d: line comment:                    %s\n", lineNum, yytext); }
+{COMMENT_START}									{ BEGIN(comment); printf("Line %d: block comment started\n", lineNum); comment_start_line = lineNum; }
+<comment>[^*\n]*								{  }
+<comment>"*"+[^*)\n]*   /* eat up '*'s not followed by '/'s */
+<comment>\n										{ ++lineNum; }
+<comment>{COMMENT_END}							{ BEGIN(INITIAL); printf("Line %d: block comment ended\n", lineNum); }
+<comment><<EOF>> {
+		printf("\nSyntax error: Unclosed comment started in line %d\n(expected \"*)\")\n\n", comment_start_line);
+		syntax_correct = 0;
+		return EOF;
+	}
 
-	/* comment errors */ /* oi ekfraseis einai la8ws alla logo proteraiwthtas tou allou kanona douleuoun */
-{COMMENT_START}.*										{ printf("\nSyntax error in line %d:                  %s\n(comment doesn't end)\n\n", lineNum, yytext); }
-.*{COMMENT_END}											{ printf("\nSyntax error in line %d:                  %s\n(comment doesn't start)\n\n", lineNum, yytext); }
 
+	/* skip whitespaces */
+[ \r\t\\]+										
 
-[ \r\t\\]+	/* skip whitespaces */
+\n												++lineNum;
 
-\n			++lineNum;
+<<EOF>>											{ return EOF; }
 
-<<EOF>>	{
-	printf("Line %d: EOF\n", lineNum);
-	return EOF;
-}
-
-	/* error. + gia pollous xarakthres*/
-	/*[^ \r\t\n\\\"]+			{ printf("Unrecognized Token %s in line %d: \n", yytext, lineNum); } /* TO-DO na deixnei olh thn grammh sto telos */
+	/* Unrecognized Token */
+.												{ printf("Unrecognized Token %s in line %d: ", yytext, lineNum); syntax_correct = 0; }
 
 
 %%
@@ -195,4 +213,6 @@ int main ()
 {
 	int token;
 	while ( (token = yylex()) != EOF ){}
+	if ( syntax_correct == 1 )
+		printf("Your program is syntactically correct");
 }

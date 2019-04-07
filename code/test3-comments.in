@@ -4,9 +4,9 @@ comment doesn't start *)
 (* comment *) extra end *)
 
 (* multi
-*  line
-   comment
-*)
+*  line *
+   comment  
+****)
 
 (* comment 
 doesn't

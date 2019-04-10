@@ -1,12 +1,11 @@
 (* right comment *)
-comment doesn't start *)
-(* nested (* comments *) error *)
+comment doesnt start *)
 (* comment *) extra end *)
 
 (* multi
 *  line *
    comment  
-****)
+****) ^
 
 (* comment 
 doesn't

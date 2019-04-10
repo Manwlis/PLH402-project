@@ -1,10 +1,15 @@
 /* start conditions */
 %{
 	#include <stdio.h>
+	#include <string.h>
 
 	int lineNum = 1;
 	int comment_start_line = 1;
 	int syntax_correct = 1;
+
+	/* According to GNU style guide for computer programming the maximum or desirable number of
+	   characters in a line of source code is 80. Print at maximum 2.5 times that. */
+	char line_buffer[200];
 %}
 
 
@@ -88,12 +93,16 @@ COMMENT_END				"*)"
 %x comment
 
 
+/* Used to create the buffer for the first line */
+%x start
+
+
 %%
 	/*********************/
 	/******* rules *******/
 	/*********************/
 
-	/* TO_DO na bgalw ta lines */
+	/* TO_DO na bgalw ta printf */
 
 	/***** keywords *****/
 {KEYWORD_INT}									{ printf("Line %3d: Token KEYWORD_INT:              %s\n", lineNum, yytext); }
@@ -150,8 +159,8 @@ COMMENT_END				"*)"
 {POS_REAL}										{ printf("Line %3d: Token CONST_REAL:               %s\n", lineNum, yytext); }
 {BOOLEAN}										{ printf("Line %3d: Token BOOLEAN:                  %s\n", lineNum, yytext); }
 	/* illegal formats */
-{ILLEGAL_FORMAT_INT}							{ printf("\nSyntax error in Line %3d:                  %s\n(Wrong integer format)\n\n", lineNum, yytext); syntax_correct = 0; }
-{ILLEGAL_FORMAT_REAL}							{ printf("\nSyntax error in Line %3d:                  %s\n(Wrong real format)\n\n", lineNum, yytext); syntax_correct = 0; }
+{ILLEGAL_FORMAT_INT}							{ printf("\nSyntax error: Illegal int format:         %s\nLine %3d: %s\n\n", yytext, lineNum, line_buffer); syntax_correct = 0; }
+{ILLEGAL_FORMAT_REAL}							{ printf("\nSyntax error: Illegal real format:        %s\nLine %3d: %s\n\n", yytext, lineNum, line_buffer); syntax_correct = 0; }
 
 
 	/***** ids *****/
@@ -164,13 +173,13 @@ COMMENT_END				"*)"
 <const_string>{STRING_OP}						{ printf("Line %3d: CONST_STRING:                   %s\n", lineNum, yytext); BEGIN(INITIAL); }
 <const_string>[^\"\n\\]*						{ yymore(); }
 <const_string>\n								{ 
-		printf("\nSyntax error in Line %3d:                %sUnclosed string (expected \")\n\n", lineNum, yytext);
-		lineNum++;
+		printf("\nSyntax error: Unclosed string.\nLine %3d: %s\n(expected \" )\n\n", lineNum, line_buffer);
 		syntax_correct = 0;
 		BEGIN(INITIAL);
+		unput('\n');	/* rescan \n to buffer the next line */
 		}
 <const_string><<EOF>>							{
-		printf("\nSyntax error in Line %3d:                %sUnclosed string (expected \")\n\n", lineNum, yytext);
+		printf("\nSyntax error: Unclosed string.\nLine %3d: %s\n(expected \" )\n\n", lineNum, line_buffer);
 		syntax_correct = 0;
 		BEGIN(INITIAL);
 		return EOF;
@@ -179,22 +188,26 @@ COMMENT_END				"*)"
 
 	/***** comments *****/
 	/* adespoto telos sxoliou */
-{COMMENT_END}									{ printf("\nSyntax error in line %3d:                  %s\n(comment doesn't start)\n\n", lineNum, yytext); syntax_correct = 0; }
+{COMMENT_END}									{ printf("\nSyntax error: Comment doesn't start.\nLine %3d: %s\n(expected (* ))\n\n", lineNum, line_buffer); syntax_correct = 0; }
 
+	/* Line comment */
 {LINE_COMM}.* 									{ printf("Line %3d: line comment:                   %s\n", lineNum, yytext); }
 {COMMENT_START}									{ BEGIN(comment); printf("Line %3d: block comment started\n", lineNum); comment_start_line = lineNum; }
-	/* fwliamsena sxolia */
-<comment>{COMMENT_START}						{
-		printf("\nSyntax error: Nested comments are not supported. Comment started in line: %d\n\n", comment_start_line);
-		syntax_correct = 0;
-		BEGIN(INITIAL);
+	/* Comment end */
+<comment>"*"+")"								{ BEGIN(INITIAL); printf("Line %3d: block comment ended\n", lineNum); }
+	/* Eat anything that's not a '*' */
+<comment>[^(*\n]*								{  }
+	/* Eat up '*'s not followed by ')'s */
+<comment>"*"+[^*)\n]*							{  }	
+	/* New line */
+<comment>\n.*									{
+		strncpy(line_buffer, yytext+1, sizeof(line_buffer));	/* save the next line */
+		yyless(1);												/* give back all but the \n to rescan */
+		++lineNum;
 	}
-<comment>[^*\n]*								{  }
-<comment>"*"+[^*)\n]*							{  }	/* eat up '*'s not followed by ')'s */
-<comment>\n										{ ++lineNum; }
-<comment>{COMMENT_END}							{ BEGIN(INITIAL); printf("Line %3d: block comment ended\n", lineNum); }
+	/* EOF in comment */
 <comment><<EOF>>								{
-		printf("\nSyntax error: Unclosed comment started in line %d\n(expected \"*)\")\n\n", comment_start_line);
+		printf("\nSyntax error: Unclosed comment in line %d.\nComment started in line: %d\n(expected *) )\n\n", lineNum, comment_start_line);
 		syntax_correct = 0;
 		BEGIN(INITIAL);
 		return EOF;
@@ -204,14 +217,32 @@ COMMENT_END				"*)"
 	/***** whitespaces *****/
 [ \r\t]+										
 
+
 	/***** new line *****/
-\n												++lineNum;
+\n.*											{
+		strncpy(line_buffer, yytext+1, sizeof(line_buffer));	/* save the next line */
+		yyless(1);												/* give back all but the \n to rescan */
+		++lineNum;
+	}
+
 
 	/***** end of file *****/
 <<EOF>>											{ return EOF; }
 
+
 	/***** Unrecognized Token *****/
-.												{ printf("Unrecognized Token %s in line %d\n", yytext, lineNum); syntax_correct = 0; }
+.												{
+		printf("\nSyntax error: Unrecognized Token:         %s\nLine %3d: %s\n\n", yytext, lineNum, line_buffer); 
+		syntax_correct = 0;
+	}
+
+
+	/* Creates the buffer for the first line. It is not used again */
+<start>.*										{
+		strncpy(line_buffer, yytext+1, sizeof(line_buffer));	/* save the next line */
+		yyless(0);												/* give back all but the \n to rescan */
+		BEGIN(INITIAL);
+	}
 
 
 %%
@@ -222,7 +253,10 @@ COMMENT_END				"*)"
 int main ()
 {
 	int token;
+
+	BEGIN(start);
 	while ( (token = yylex()) != EOF ){}
+
 	if ( syntax_correct == 1 )
 		printf("Your program is syntactically correct!\n\n");
 }

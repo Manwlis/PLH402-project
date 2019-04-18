@@ -1,15 +1,15 @@
 /* start conditions */
 %{
+	#include <assert.h>
 	#include <stdio.h>
 	#include <string.h>
+	#include "teac_parser.tab.h"
+	#include "cgen.h"
 
-	int lineNum = 1;
+	int line_num = 1;
 	int comment_start_line = 1;
-	int syntax_correct = 1;
 
-	/* According to GNU style guide for computer programming the maximum or desirable number of
-	   characters in a line of source code is 80. Print at maximum 2.5 times that. */
-	char line_buffer[200];
+	char *line_buffer;
 %}
 
 
@@ -19,21 +19,22 @@
 
 
 /***** keywords *****/
-KEYWORD_INT				"int"
-KEYWORD_REAL			"real"
-KEYWORD_BOOL			"bool"
-KEYWORD_STRING			"string"
-KEYWORD_IF				"if"
-KEYWORD_ELSE			"else"
-KEYWORD_FI				"fi"
-KEYWORD_WHILE			"while"
-KEYWORD_LOOP			"loop"
-KEYWORD_POOL			"pool"
-KEYWORD_CONST			"const"
-KEYWORD_LET				"let"
-KEYWORD_BREAK			"break"
-KEYWORD_RETURN			"return"
-KEYWORD_START			"start"
+KW_INT					"int"
+KW_REAL					"real"
+KW_BOOL					"bool"
+KW_STRING				"string"
+KW_IF					"if"
+KW_THEN					"then"
+KW_ELSE					"else"
+KW_FI					"fi"
+KW_WHILE				"while"
+KW_LOOP					"loop"
+KW_POOL					"pool"
+KW_CONST				"const"
+KW_LET					"let"
+KW_BREAK				"break"
+KW_RETURN				"return"
+KW_START				"start"
 
 
 /***** operators *****/
@@ -74,7 +75,8 @@ IDENTIFIER				[a-zA-Z][0-9a-zA-Z_]*
 /***** values *****/
 POS_INT					([0])|([1-9][0-9]*)
 POS_REAL				{POS_INT}"."[0-9]+([eE][-+]?[1-9][0-9]*)?
-BOOLEAN					"true"|"false"
+KW_TRUE			"true"
+KW_FALSE			"false"
 /* starts with reduntant zero */
 ILLEGAL_FORMAT_INT		[0][0-9]+
 /* starts with reduntant zero | no int part | no decimal part | reduntant zero on exponential part | no exponential part */
@@ -102,116 +104,114 @@ COMMENT_END				"*)"
 	/******* rules *******/
 	/*********************/
 
-	/* TO_DO na bgalw ta printf */
 
 	/***** keywords *****/
-{KEYWORD_INT}									{ printf("Line %3d: Token KEYWORD_INT:              %s\n", lineNum, yytext); }
-{KEYWORD_REAL}									{ printf("Line %3d: Token KEYWORD_REAL:             %s\n", lineNum, yytext); }
-{KEYWORD_BOOL}									{ printf("Line %3d: Token KEYWORD_BOOL:             %s\n", lineNum, yytext); }
-{KEYWORD_STRING}								{ printf("Line %3d: Token KEYWORD_STRING:           %s\n", lineNum, yytext); }
-{KEYWORD_IF}									{ printf("Line %3d: Token KEYWORD_IF:               %s\n", lineNum, yytext); }
-{KEYWORD_ELSE}									{ printf("Line %3d: Token KEYWORD_ELSE:             %s\n", lineNum, yytext); }
-{KEYWORD_FI}									{ printf("Line %3d: Token KEYWORD_FI:               %s\n", lineNum, yytext); }
-{KEYWORD_WHILE}									{ printf("Line %3d: Token KEYWORD_WHILE:            %s\n", lineNum, yytext); }
-{KEYWORD_LOOP}									{ printf("Line %3d: Token KEYWORD_LOOP:             %s\n", lineNum, yytext); }
-{KEYWORD_POOL}									{ printf("Line %3d: Token KEYWORD_POOL:             %s\n", lineNum, yytext); }
-{KEYWORD_CONST}									{ printf("Line %3d: Token KEYWORD_CONST:            %s\n", lineNum, yytext); }
-{KEYWORD_LET}									{ printf("Line %3d: Token KEYWORD_LET:              %s\n", lineNum, yytext); }
-{KEYWORD_BREAK}									{ printf("Line %3d: Token KEYWORD_BREAK:            %s\n", lineNum, yytext); }
-{KEYWORD_RETURN}								{ printf("Line %3d: Token KEYWORD_RETURN:           %s\n", lineNum, yytext); }
-{KEYWORD_START}									{ printf("Line %3d: Token KEYWORD_START:            %s\n", lineNum, yytext); }
+{KW_INT}						return KW_INT;
+{KW_REAL}						return KW_REAL;
+{KW_BOOL}						return KW_BOOL;
+{KW_STRING}						return KW_STRING;
+{KW_IF}							return KW_IF;
+{KW_THEN}						return KW_THEN;
+{KW_ELSE}						return KW_ELSE;
+{KW_FI}							return KW_FI;
+{KW_WHILE}						return KW_WHILE;
+{KW_LOOP}						return KW_LOOP;
+{KW_POOL}						return KW_POOL;
+{KW_CONST}						return KW_CONST;
+{KW_LET}						return KW_LET;
+{KW_BREAK}						return KW_BREAK;
+{KW_RETURN}						return KW_RETURN;
+{KW_START}						return KW_START;
 
 
 	/***** operators *****/
 	/* arithmetic */
-{ADD_POS_OP}									{ printf("Line %3d: Token ADD_POS_OP:               %s\n", lineNum, yytext); }
-{SUBTRACT_NEG_OP}								{ printf("Line %3d: Token SUBTRACT_NEG_OP:          %s\n", lineNum, yytext); }
-{MULTIPLY_OP}									{ printf("Line %3d: Token MULTIPLY_OP:              %s\n", lineNum, yytext); }
-{DIVIDE_OP}										{ printf("Line %3d: Token DIVIDE_OP:                %s\n", lineNum, yytext); }
-{MODULOS_OP}									{ printf("Line %3d: Token MOD_OP:                   %s\n", lineNum, yytext); }
+{ADD_POS_OP}					return ADD_POS_OP;
+{SUBTRACT_NEG_OP}				return SUBTRACT_NEG_OP;
+{MULTIPLY_OP}					return MULTIPLY_OP;
+{DIVIDE_OP}						return DIVIDE_OP;
+{MODULOS_OP}					return MOD_OP;
 	/* relational */
-{EQUAL_OP}										{ printf("Line %3d: Token EQUAL_OP:                 %s\n", lineNum, yytext); }
-{DIFFERENT_OP}									{ printf("Line %3d: Token DIFFERENT_OP:             %s\n", lineNum, yytext); }
-{LESS_OP}										{ printf("Line %3d: Token LESS_OP:                  %s\n", lineNum, yytext); }
-{EQUAL_LESS_OP}									{ printf("Line %3d: Token EQUAL_LESS_OP:            %s\n", lineNum, yytext); }
+{EQUAL_OP}						return EQUAL_OP;
+{DIFFERENT_OP}					return DIFFERENT_OP;
+{LESS_OP}						return LESS_OP;
+{EQUAL_LESS_OP}					return EQUAL_LESS_OP;
 	/* logical */
-{AND_OP}										{ printf("Line %3d: Token AND_OP:                   %s\n", lineNum, yytext); }
-{OR_OP}											{ printf("Line %3d: Token OR_OP:                    %s\n", lineNum, yytext); }
-{NOT_OP}										{ printf("Line %3d: Token NOT_OP:                   %s\n", lineNum, yytext); }
+{AND_OP}						return AND_OP;
+{OR_OP}							return OR_OP;
+{NOT_OP}						return NOT_OP;
 	/* delimeters */
-{ASSIGN_OP}										{ printf("Line %3d: Token ASSIGN_OP:                %s\n", lineNum, yytext); }
-{COLON}											{ printf("Line %3d: Token COLON:                    %s\n", lineNum, yytext); }
-{SEMICOLON}										{ printf("Line %3d: Token SEMICOLON:                %s\n", lineNum, yytext); }
-{COMMA}											{ printf("Line %3d: Token COMMA:                    %s\n", lineNum, yytext); }
-{LEFT_PARENTHESIS}								{ printf("Line %3d: Token LEFT_PARENTHESIS:         %s\n", lineNum, yytext); }
-{RIGHT_PARENTHESIS}								{ printf("Line %3d: Token RIGHT_PARENTHESIS:        %s\n", lineNum, yytext); }
-{LEFT_BRACKET}									{ printf("Line %3d: Token LEFT_BRACKET:             %s\n", lineNum, yytext); }
-{RIGHT_BRACKET}									{ printf("Line %3d: Token RIGHT_BRACKET:            %s\n", lineNum, yytext); }
-{LEFT_CURLY_BRACKET}							{ printf("Line %3d: Token LEFT_CURLY_BRACKET:       %s\n", lineNum, yytext); }
-{RIGHT_CURLY_BRACKET}							{ printf("Line %3d: Token RIGHT_CURLY_BRACKET:      %s\n", lineNum, yytext); }
+{ASSIGN_OP}						return ASSIGN_OP;
+{COLON}							return COLON;
+{SEMICOLON}						return SEMICOLON;
+{COMMA}							return COMMA;
+{LEFT_PARENTHESIS}				return LEFT_PARENTHESIS;
+{RIGHT_PARENTHESIS}				return RIGHT_PARENTHESIS;
+{LEFT_BRACKET}					return LEFT_BRACKET;
+{RIGHT_BRACKET}					return RIGHT_BRACKET;
+{LEFT_CURLY_BRACKET}			return LEFT_CURLY_BRACKET;
+{RIGHT_CURLY_BRACKET}			return RIGHT_CURLY_BRACKET;
 	/* ???????????????? */
-{ARROW_OP}										{ printf("Line %3d: Token ARROW_OP:                 %s\n", lineNum, yytext); }
+{ARROW_OP}						return ARROW_OP;
 
 
 	/***** values *****/
 	/* legal formats */
-{POS_INT}										{ printf("Line %3d: Token CONST_INT:                %s\n", lineNum, yytext); }
-{POS_REAL}										{ printf("Line %3d: Token CONST_REAL:               %s\n", lineNum, yytext); }
-{BOOLEAN}										{ printf("Line %3d: Token BOOLEAN:                  %s\n", lineNum, yytext); }
+{POS_INT}						{ yylval.crepr = strdup(yytext); return POS_INT; }
+{POS_REAL}						{ yylval.crepr = strdup(yytext); return POS_REAL; }
+{KW_TRUE}						return KW_TRUE;
+{KW_FALSE}						return KW_FALSE;
 	/* illegal formats */
-{ILLEGAL_FORMAT_INT}							{ printf("\nSyntax error: Illegal int format:         %s\nLine %3d: %s\n\n", yytext, lineNum, line_buffer); syntax_correct = 0; }
-{ILLEGAL_FORMAT_REAL}							{ printf("\nSyntax error: Illegal real format:        %s\nLine %3d: %s\n\n", yytext, lineNum, line_buffer); syntax_correct = 0; }
+{ILLEGAL_FORMAT_INT}			yyerror("\nSyntax error: Illegal int format:         %s\nLine %3d: %s\n\n", yytext, line_num, line_buffer);
+{ILLEGAL_FORMAT_REAL}			yyerror("\nSyntax error: Illegal real format:        %s\nLine %3d: %s\n\n", yytext, line_num, line_buffer);
 
 
 	/***** ids *****/
-{IDENTIFIER}									{ printf("Line %3d: Token IDENTIFIER:               %s\n", lineNum, yytext); }
+{IDENTIFIER}					{ yylval.crepr = strdup(yytext); return IDENTIFIER; }
 
 
 	/***** strings *****/
-{STRING_OP}										{ BEGIN(const_string); yymore(); }
-<const_string>"\\"+"\""*						{ yymore(); }	/* eats " leaded by \ */
-<const_string>{STRING_OP}						{ printf("Line %3d: CONST_STRING:                   %s\n", lineNum, yytext); BEGIN(INITIAL); }
-<const_string>[^\"\n\\]*						{ yymore(); }
-<const_string>\n								{ 
-		printf("\nSyntax error: Unclosed string.\nLine %3d: %s\n(expected \" )\n\n", lineNum, line_buffer);
-		syntax_correct = 0;
-		BEGIN(INITIAL);
-		unput('\n');	/* rescan \n to buffer the next line */
-		}
-<const_string><<EOF>>							{
-		printf("\nSyntax error: Unclosed string.\nLine %3d: %s\n(expected \" )\n\n", lineNum, line_buffer);
-		syntax_correct = 0;
-		BEGIN(INITIAL);
-		return EOF;
-	}
+{STRING_OP}						{ BEGIN(const_string); yymore(); }
+<const_string>"\\"+"\""?		yymore();	/* eat \" and \ */
+<const_string>{STRING_OP}		{ BEGIN(INITIAL); yylval.crepr = strdup(yytext); return STRING; }
+<const_string>[^\"\n\\]*		yymore();	/* eat anything else */
+<const_string>\n				{ 
+									yyerror("\nSyntax error: Unclosed string.\nLine %3d: %s\n(expected \" )\n\n", line_num, line_buffer);
+									BEGIN(INITIAL);
+									unput('\n');	/* rescan \n to buffer the next line */
+								}
+<const_string><<EOF>>			{
+									yyerror("\nSyntax error: Unclosed string.\nLine %3d: %s\n(expected \" )\n\n", line_num, line_buffer);
+									BEGIN(INITIAL);
+									return EOF;
+								}
 
 
 	/***** comments *****/
 	/* adespoto telos sxoliou */
-{COMMENT_END}									{ printf("\nSyntax error: Comment doesn't start.\nLine %3d: %s\n(expected (* ))\n\n", lineNum, line_buffer); syntax_correct = 0; }
+{COMMENT_END}					yyerror("\nSyntax error: Comment doesn't start.\nLine %3d: %s\n(expected (* ))\n\n", line_num, line_buffer);
 
 	/* Line comment */
-{LINE_COMM}.* 									{ printf("Line %3d: line comment:                   %s\n", lineNum, yytext); }
-{COMMENT_START}									{ BEGIN(comment); printf("Line %3d: block comment started\n", lineNum); comment_start_line = lineNum; }
+{LINE_COMM}.*
+{COMMENT_START}					{ BEGIN(comment); comment_start_line = line_num; }
 	/* Comment end */
-<comment>"*"+")"								{ BEGIN(INITIAL); printf("Line %3d: block comment ended\n", lineNum); }
+<comment>"*"+")"				BEGIN(INITIAL);
 	/* Eat anything that's not a '*' */
-<comment>[^(*\n]*								{  }
+<comment>[^(*\n]*
 	/* Eat up '*'s not followed by ')'s */
-<comment>"*"+[^*)\n]*							{  }	
+<comment>"*"+[^*)\n]*
 	/* New line */
-<comment>\n.*									{
-		strncpy(line_buffer, yytext+1, sizeof(line_buffer));	/* save the next line */
-		yyless(1);												/* give back all but the \n to rescan */
-		++lineNum;
-	}
+<comment>\n.*					{
+									line_buffer = strdup(yytext);	/* save the next line */
+									yyless(1);						/* give back all but the \n to rescan */
+									++line_num;
+								}
 	/* EOF in comment */
-<comment><<EOF>>								{
-		printf("\nSyntax error: Unclosed comment in line %d.\nComment started in line: %d\n(expected *) )\n\n", lineNum, comment_start_line);
-		syntax_correct = 0;
-		BEGIN(INITIAL);
-		return EOF;
-	}
+<comment><<EOF>>				{
+									yyerror("\nSyntax error: Unclosed comment in line %d.\nComment started in line: %d\n(expected *) )\n\n", line_num, comment_start_line);
+									BEGIN(INITIAL);
+									return EOF;
+								}
 
 
 	/***** whitespaces *****/
@@ -219,37 +219,34 @@ COMMENT_END				"*)"
 
 
 	/***** new line *****/
-\n.*											{
-		strncpy(line_buffer, yytext+1, sizeof(line_buffer));	/* save the next line */
-		yyless(1);												/* give back all but the \n to rescan */
-		++lineNum;
-	}
+\n.*							{
+									line_buffer = strdup(yytext);	/* save the next line */
+									yyless(1);						/* give back all but the \n to rescan */
+									++line_num;
+								}
 
 
 	/***** end of file *****/
-<<EOF>>											{ return EOF; }
+<<EOF>>							return EOF;
 
 
 	/***** Unrecognized Token *****/
-.												{
-		printf("\nSyntax error: Unrecognized Token:         %s\nLine %3d: %s\n\n", yytext, lineNum, line_buffer); 
-		syntax_correct = 0;
-	}
+.								yyerror("\nSyntax error: Unrecognized Token:         %s\nLine %3d: %s\n\n", yytext, line_num, line_buffer);
 
 
 	/* Creates the buffer for the first line. It is not used again */
-<start>.*										{
-		strncpy(line_buffer, yytext+1, sizeof(line_buffer));	/* save the next line */
-		yyless(0);												/* give back all but the \n to rescan */
-		BEGIN(INITIAL);
-	}
+<start>.*						{
+									line_buffer = strdup(yytext);	/* save the next line */
+									yyless(0);						/* give back all but the \n to rescan */
+									BEGIN(INITIAL);
+								}
 
 
 %%
 /***********************/
 /****** user code ******/
 /***********************/
-
+/*
 int main ()
 {
 	int token;
@@ -260,3 +257,4 @@ int main ()
 	if ( syntax_correct == 1 )
 		printf("Your program is syntactically correct!\n\n");
 }
+*/

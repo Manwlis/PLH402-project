@@ -1,16 +1,26 @@
+/**********************/
+/****** prologue ******/
+/**********************/
+
 %{
 	#include <stdlib.h>
 	#include <stdarg.h>
 	#include <stdio.h>
-	#include <string.h>		
+	#include <string.h>	
+	#include <stdbool.h>	
 	#include "cgen.h"
 
 	extern int yylex(void);
 	extern int line_num;
-	extern int comment_start_line = 1;
+	extern int comment_start_line;
 
 	extern char *line_buffer;
 %}
+
+
+/****************************/
+/**** Bison declarations ****/
+/****************************/
 
 %union
 {
@@ -18,7 +28,7 @@
 }
 
 
-	/***** keywords *****/
+/***** keywords *****/
 %token KW_INT
 %token KW_REAL
 %token KW_BOOL
@@ -37,64 +47,57 @@
 %token KW_START
 
 
-	/***** operators *****/
-	/* arithmetic */
-%token ADD_POS_OP
-%token SUBTRACT_NEG_OP
-%token MULTIPLY_OP
-%token DIVIDE_OP
-%token MOD_OP
-	/* relational */
-%token EQUAL_OP
+/***** operators *****/
+/* relational */
 %token DIFFERENT_OP
-%token LESS_OP
 %token EQUAL_LESS_OP
-	/* logical */
+/* logical */
 %token AND_OP
 %token OR_OP
 %token NOT_OP
-	/* delimeters */
+/* delimeters */
 %token ASSIGN_OP
-%token COLON
-%token SEMICOLON
-%token COMMA
-%token LEFT_PARENTHESIS
-%token RIGHT_PARENTHESIS
-%token LEFT_BRACKET
-%token RIGHT_BRACKET
-%token LEFT_CURLY_BRACKET
-%token RIGHT_CURLY_BRACKET
-	/* ???????????????? */
+/* 	 */
 %token ARROW_OP
 
 
-	/***** values *****/
-	/* legal formats */
+/***** values *****/
+/* legal formats */
 %token <crepr> POS_INT
 %token <crepr> POS_REAL
 %token KW_TRUE
 %token KW_FALSE
 
 
-	/***** ids *****/
+/***** ids *****/
 %token <crepr> IDENTIFIER
 
 
-	/***** strings *****/
+/***** strings *****/
 %token <crepr> STRING
 
 
 %start program
 
-%type <crepr> decl_list body decl
+%type <crepr> decl_list decl
+%type <crepr> body body_line
 %type <crepr> const_decl_body const_decl_list const_decl_init const_decl_id
 %type <crepr> type_spec
-%type <crepr> expr
+%type <crepr> expr string
+%type <crepr> function
+
+
+%left ADD_POS_OP SUBTRACT_NEG_OP
+%left MULTIPLY_OP DIVIDE_OP MOD_OP
 
 
 %%
+/***********************/
+/**** Grammar rules ****/
+/***********************/
 
-program: decl_list KW_CONST KW_START ASSIGN '(' ')' ':' KW_INT ARROW '{' body '}' { 
+// const start <- (): int => { body }
+program: decl_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}' { 
 /* We have a successful parse! 
   Check for any errors and generate output. 
 */
@@ -108,50 +111,85 @@ program: decl_list KW_CONST KW_START ASSIGN '(' ')' ':' KW_INT ARROW '{' body '}
 }
 ;
 
-decl_list: decl_list decl { $$ = template("%s\n%s", $1, $2); }
+// declaration start
+decl_list: 
+decl_list decl { $$ = template("%s\n%s", $1, $2); }
 | decl { $$ = $1; }
 ;
 
-decl: KW_CONST const_decl_body { $$ = template("const %s", $2); }
-
+decl: 
+KW_CONST const_decl_body { $$ = template("const %s", $2); }
 ;
 
-const_decl_body: const_decl_list ':' type_spec ';' {  $$ = template("%s %s;", $3, $1); }
+const_decl_body: 
+const_decl_list ':' type_spec ';' {  $$ = template("%s %s;", $3, $1); }
 ;
 
-const_decl_list: const_decl_list ',' const_decl_init { $$ = template("%s, %s", $1, $3 );}
+const_decl_list: 
+const_decl_list ',' const_decl_init { $$ = template("%s, %s", $1, $3 );}
 | const_decl_init { $$ = $1; }
 ;
 
-const_decl_init: const_decl_id { $$ = $1; }
-| const_decl_id ASSIGN expr { $$ = template("%s=%s", $1, $3); 
-}
+const_decl_init: 
+const_decl_id { $$ = $1; }
+| const_decl_id ASSIGN_OP expr { $$ = template("%s=%s", $1, $3);}
+| const_decl_id ASSIGN_OP string { $$ = template("%s=%s", $1, $3);}
 ; 
 
-const_decl_id: IDENT { $$ = $1; } 
-| IDENT '['']' { $$ = template("*%s", $1); }
-;
+const_decl_id: 
+IDENTIFIER { $$ = $1; } 
+| IDENTIFIER '[' ']' { $$ = template("*%s", $1); /*isws 8elei kai me POS_INT mesa stis aggiles */}
 
-type_spec:  KW_INT { $$ = "int"; }
+;
+// declaration end
+
+// tupoi dedomenwn
+type_spec:
+KW_INT { $$ = "int"; }
 | KW_REAL { $$ = "double"; }
+| KW_BOOL { $$ = "bool"; }
+| KW_STRING { $$ = "char*"; }
 ;
 
-expr: POSINT { $$ = $1; }
-| REAL { $$ = $1; }
+string:
+STRING { $$ = $1; }
 ;
 
-body: { $$="";}
+expr: 
+POS_INT { $$ = $1; }
+| POS_REAL { $$ = $1; }
+| '(' expr ')' { $$ = template("(%s)", $2); }
+| expr '+' expr { $$ = template("%s + %s", $1, $3); }
+| expr '-' expr { $$ = template("%s - %s", $1, $3); }
+| expr '*' expr { $$ = template("%s * %s", $1, $3); }
+| expr '/' expr { $$ = template("%s / %s", $1, $3); }
+| expr '%' expr { $$ = template("%s % %s", $1, $3); }
 ;
+
+
+body: 
+body body_line { $$ = template("%s\n%s", $1, $2); }
+| body_line { $$ = $1; }
+;
+
+function:
+IDENTIFIER '(' const_decl_id ')' { $$ = template("%s(%s)", $1, $3); }
+| IDENTIFIER '(' expr ')' { $$ = template("%s(%s)", $1, $3); }
+| IDENTIFIER '(' ')' { $$ = template("%s()", $1); }
+;
+
 
 %%
-int main () {
+/**********************/
+/****** epilogue ******/
+/**********************/
 
-	BEGIN(start);
+int main () {
 
 	if ( yyparse() != 0 )
 		printf("Rejected!\n");
 	else
-		printf("Your program is syntactically correct!\n\n");
+		printf("\n/* Your program is syntactically correct!*/\n\n");
 
 	free(line_buffer);
 	

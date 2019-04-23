@@ -3,7 +3,7 @@
 	#include <assert.h>
 	#include <stdio.h>
 	#include <string.h>
-	#include "teac_parser.tab.h"
+	#include "myparser.tab.h"
 	#include "cgen.h"
 
 	int line_num = 1;
@@ -38,16 +38,8 @@ KW_START				"start"
 
 
 /***** operators *****/
-/* arithmetic */
-ADD_POS_OP				"+"
-SUBTRACT_NEG_OP			"-"
-MULTIPLY_OP				"*"
-DIVIDE_OP				"/"
-MODULOS_OP				"%"
 /* relational */
-EQUAL_OP				"="
 DIFFERENT_OP			"!="
-LESS_OP					"<"
 EQUAL_LESS_OP			"<="
 /* logical */
 AND_OP					"and"
@@ -55,15 +47,6 @@ OR_OP					"or"
 NOT_OP					"not"
 /* delimeters */
 ASSIGN_OP				"<-"
-COLON					":"
-SEMICOLON				";"
-COMMA					","
-LEFT_PARENTHESIS		"("
-RIGHT_PARENTHESIS		")"
-LEFT_BRACKET			"["
-RIGHT_BRACKET			"]"
-LEFT_CURLY_BRACKET		"{"
-RIGHT_CURLY_BRACKET		"}"
 /*  */
 ARROW_OP				"=>"
 
@@ -126,15 +109,15 @@ COMMENT_END				"*)"
 
 	/***** operators *****/
 	/* arithmetic */
-{ADD_POS_OP}					return ADD_POS_OP;
-{SUBTRACT_NEG_OP}				return SUBTRACT_NEG_OP;
-{MULTIPLY_OP}					return MULTIPLY_OP;
-{DIVIDE_OP}						return DIVIDE_OP;
-{MODULOS_OP}					return MOD_OP;
+"+"								return '+';
+"-"								return '-';
+"*"								return '*';
+"/"								return '/';
+"%"								return '%';
 	/* relational */
-{EQUAL_OP}						return EQUAL_OP;
+"="								return '=';
 {DIFFERENT_OP}					return DIFFERENT_OP;
-{LESS_OP}						return LESS_OP;
+"<"								return '<';
 {EQUAL_LESS_OP}					return EQUAL_LESS_OP;
 	/* logical */
 {AND_OP}						return AND_OP;
@@ -142,15 +125,15 @@ COMMENT_END				"*)"
 {NOT_OP}						return NOT_OP;
 	/* delimeters */
 {ASSIGN_OP}						return ASSIGN_OP;
-{COLON}							return COLON;
-{SEMICOLON}						return SEMICOLON;
-{COMMA}							return COMMA;
-{LEFT_PARENTHESIS}				return LEFT_PARENTHESIS;
-{RIGHT_PARENTHESIS}				return RIGHT_PARENTHESIS;
-{LEFT_BRACKET}					return LEFT_BRACKET;
-{RIGHT_BRACKET}					return RIGHT_BRACKET;
-{LEFT_CURLY_BRACKET}			return LEFT_CURLY_BRACKET;
-{RIGHT_CURLY_BRACKET}			return RIGHT_CURLY_BRACKET;
+":"								return ':';
+";"								return ';';
+","								return ',';
+"("								return '(';
+")"								return ')';
+"["								return '[';
+"]"								return ']';
+"{"								return '{';
+"}"								return '}';
 	/* ???????????????? */
 {ARROW_OP}						return ARROW_OP;
 

@@ -5,7 +5,7 @@
 #include "cgen.h"
 
 extern int line_num;
-extern int comment_start_line = 1;
+extern int comment_start_line;
 
 extern char *line_buffer;
 

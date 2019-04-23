@@ -559,7 +559,7 @@ char *yytext;
 	#include <assert.h>
 	#include <stdio.h>
 	#include <string.h>
-	#include "teac_parser.tab.h"
+	#include "myparser.tab.h"
 	#include "cgen.h"
 
 	int line_num = 1;
@@ -572,7 +572,6 @@ char *yytext;
 /***********************/
 /***** keywords *****/
 /***** operators *****/
-/* arithmetic */
 /* relational */
 /* logical */
 /* delimeters */
@@ -587,7 +586,7 @@ char *yytext;
 
 /* Used to create the buffer for the first line */
 
-#line 591 "lex.yy.c"
+#line 590 "lex.yy.c"
 
 #define INITIAL 0
 #define const_string 1
@@ -807,16 +806,16 @@ YY_DECL
 		}
 
 	{
-#line 102 "mylexer.l"
+#line 85 "mylexer.l"
 
-#line 104 "mylexer.l"
+#line 87 "mylexer.l"
 	/*********************/
 	/******* rules *******/
 	/*********************/
 
 
 	/***** keywords *****/
-#line 820 "lex.yy.c"
+#line 819 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -881,269 +880,269 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 110 "mylexer.l"
+#line 93 "mylexer.l"
 return KW_INT;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 111 "mylexer.l"
+#line 94 "mylexer.l"
 return KW_REAL;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 112 "mylexer.l"
+#line 95 "mylexer.l"
 return KW_BOOL;
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 113 "mylexer.l"
+#line 96 "mylexer.l"
 return KW_STRING;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 114 "mylexer.l"
+#line 97 "mylexer.l"
 return KW_IF;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 115 "mylexer.l"
+#line 98 "mylexer.l"
 return KW_THEN;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 116 "mylexer.l"
+#line 99 "mylexer.l"
 return KW_ELSE;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 117 "mylexer.l"
+#line 100 "mylexer.l"
 return KW_FI;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 118 "mylexer.l"
+#line 101 "mylexer.l"
 return KW_WHILE;
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 119 "mylexer.l"
+#line 102 "mylexer.l"
 return KW_LOOP;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 120 "mylexer.l"
+#line 103 "mylexer.l"
 return KW_POOL;
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 121 "mylexer.l"
+#line 104 "mylexer.l"
 return KW_CONST;
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 122 "mylexer.l"
+#line 105 "mylexer.l"
 return KW_LET;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 123 "mylexer.l"
+#line 106 "mylexer.l"
 return KW_BREAK;
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 124 "mylexer.l"
+#line 107 "mylexer.l"
 return KW_RETURN;
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 125 "mylexer.l"
+#line 108 "mylexer.l"
 return KW_START;
 	YY_BREAK
 /***** operators *****/
 /* arithmetic */
 case 17:
 YY_RULE_SETUP
-#line 130 "mylexer.l"
-return ADD_POS_OP;
+#line 113 "mylexer.l"
+return '+';
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 131 "mylexer.l"
-return SUBTRACT_NEG_OP;
+#line 114 "mylexer.l"
+return '-';
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 132 "mylexer.l"
-return MULTIPLY_OP;
+#line 115 "mylexer.l"
+return '*';
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 133 "mylexer.l"
-return DIVIDE_OP;
+#line 116 "mylexer.l"
+return '/';
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 134 "mylexer.l"
-return MOD_OP;
+#line 117 "mylexer.l"
+return '%';
 	YY_BREAK
 /* relational */
 case 22:
 YY_RULE_SETUP
-#line 136 "mylexer.l"
-return EQUAL_OP;
+#line 119 "mylexer.l"
+return '=';
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 137 "mylexer.l"
+#line 120 "mylexer.l"
 return DIFFERENT_OP;
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 138 "mylexer.l"
-return LESS_OP;
+#line 121 "mylexer.l"
+return '<';
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 139 "mylexer.l"
+#line 122 "mylexer.l"
 return EQUAL_LESS_OP;
 	YY_BREAK
 /* logical */
 case 26:
 YY_RULE_SETUP
-#line 141 "mylexer.l"
+#line 124 "mylexer.l"
 return AND_OP;
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 142 "mylexer.l"
+#line 125 "mylexer.l"
 return OR_OP;
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 143 "mylexer.l"
+#line 126 "mylexer.l"
 return NOT_OP;
 	YY_BREAK
 /* delimeters */
 case 29:
 YY_RULE_SETUP
-#line 145 "mylexer.l"
+#line 128 "mylexer.l"
 return ASSIGN_OP;
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 146 "mylexer.l"
-return COLON;
+#line 129 "mylexer.l"
+return ':';
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 147 "mylexer.l"
-return SEMICOLON;
+#line 130 "mylexer.l"
+return ';';
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 148 "mylexer.l"
-return COMMA;
+#line 131 "mylexer.l"
+return ',';
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 149 "mylexer.l"
-return LEFT_PARENTHESIS;
+#line 132 "mylexer.l"
+return '(';
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 150 "mylexer.l"
-return RIGHT_PARENTHESIS;
+#line 133 "mylexer.l"
+return ')';
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 151 "mylexer.l"
-return LEFT_BRACKET;
+#line 134 "mylexer.l"
+return '[';
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 152 "mylexer.l"
-return RIGHT_BRACKET;
+#line 135 "mylexer.l"
+return ']';
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 153 "mylexer.l"
-return LEFT_CURLY_BRACKET;
+#line 136 "mylexer.l"
+return '{';
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 154 "mylexer.l"
-return RIGHT_CURLY_BRACKET;
+#line 137 "mylexer.l"
+return '}';
 	YY_BREAK
 /* ???????????????? */
 case 39:
 YY_RULE_SETUP
-#line 156 "mylexer.l"
+#line 139 "mylexer.l"
 return ARROW_OP;
 	YY_BREAK
 /***** values *****/
 /* legal formats */
 case 40:
 YY_RULE_SETUP
-#line 161 "mylexer.l"
+#line 144 "mylexer.l"
 { yylval.crepr = strdup(yytext); return POS_INT; }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 162 "mylexer.l"
+#line 145 "mylexer.l"
 { yylval.crepr = strdup(yytext); return POS_REAL; }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 163 "mylexer.l"
+#line 146 "mylexer.l"
 return KW_TRUE;
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 164 "mylexer.l"
+#line 147 "mylexer.l"
 return KW_FALSE;
 	YY_BREAK
 /* illegal formats */
 case 44:
 YY_RULE_SETUP
-#line 166 "mylexer.l"
+#line 149 "mylexer.l"
 yyerror("\nSyntax error: Illegal int format:         %s\nLine %3d: %s\n\n", yytext, line_num, line_buffer);
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 167 "mylexer.l"
+#line 150 "mylexer.l"
 yyerror("\nSyntax error: Illegal real format:        %s\nLine %3d: %s\n\n", yytext, line_num, line_buffer);
 	YY_BREAK
 /***** ids *****/
 case 46:
 YY_RULE_SETUP
-#line 171 "mylexer.l"
+#line 154 "mylexer.l"
 { yylval.crepr = strdup(yytext); return IDENTIFIER; }
 	YY_BREAK
 /***** strings *****/
 case 47:
 YY_RULE_SETUP
-#line 175 "mylexer.l"
+#line 158 "mylexer.l"
 { BEGIN(const_string); yymore(); }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 176 "mylexer.l"
+#line 159 "mylexer.l"
 yymore();	/* eat \" and \ */
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 177 "mylexer.l"
+#line 160 "mylexer.l"
 { BEGIN(INITIAL); yylval.crepr = strdup(yytext); return STRING; }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 178 "mylexer.l"
+#line 161 "mylexer.l"
 yymore();	/* eat anything else */
 	YY_BREAK
 case 51:
 /* rule 51 can match eol */
 YY_RULE_SETUP
-#line 179 "mylexer.l"
+#line 162 "mylexer.l"
 { 
 									yyerror("\nSyntax error: Unclosed string.\nLine %3d: %s\n(expected \" )\n\n", line_num, line_buffer);
 									BEGIN(INITIAL);
@@ -1151,7 +1150,7 @@ YY_RULE_SETUP
 								}
 	YY_BREAK
 case YY_STATE_EOF(const_string):
-#line 184 "mylexer.l"
+#line 167 "mylexer.l"
 {
 									yyerror("\nSyntax error: Unclosed string.\nLine %3d: %s\n(expected \" )\n\n", line_num, line_buffer);
 									BEGIN(INITIAL);
@@ -1162,43 +1161,43 @@ case YY_STATE_EOF(const_string):
 /* adespoto telos sxoliou */
 case 52:
 YY_RULE_SETUP
-#line 193 "mylexer.l"
+#line 176 "mylexer.l"
 yyerror("\nSyntax error: Comment doesn't start.\nLine %3d: %s\n(expected (* ))\n\n", line_num, line_buffer);
 	YY_BREAK
 /* Line comment */
 case 53:
 YY_RULE_SETUP
-#line 196 "mylexer.l"
+#line 179 "mylexer.l"
 
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 197 "mylexer.l"
+#line 180 "mylexer.l"
 { BEGIN(comment); comment_start_line = line_num; }
 	YY_BREAK
 /* Comment end */
 case 55:
 YY_RULE_SETUP
-#line 199 "mylexer.l"
+#line 182 "mylexer.l"
 BEGIN(INITIAL);
 	YY_BREAK
 /* Eat anything that's not a '*' */
 case 56:
 YY_RULE_SETUP
-#line 201 "mylexer.l"
+#line 184 "mylexer.l"
 
 	YY_BREAK
 /* Eat up '*'s not followed by ')'s */
 case 57:
 YY_RULE_SETUP
-#line 203 "mylexer.l"
+#line 186 "mylexer.l"
 
 	YY_BREAK
 /* New line */
 case 58:
 /* rule 58 can match eol */
 YY_RULE_SETUP
-#line 205 "mylexer.l"
+#line 188 "mylexer.l"
 {
 									line_buffer = strdup(yytext);	/* save the next line */
 									yyless(1);						/* give back all but the \n to rescan */
@@ -1207,7 +1206,7 @@ YY_RULE_SETUP
 	YY_BREAK
 /* EOF in comment */
 case YY_STATE_EOF(comment):
-#line 211 "mylexer.l"
+#line 194 "mylexer.l"
 {
 									yyerror("\nSyntax error: Unclosed comment in line %d.\nComment started in line: %d\n(expected *) )\n\n", line_num, comment_start_line);
 									BEGIN(INITIAL);
@@ -1217,14 +1216,14 @@ case YY_STATE_EOF(comment):
 /***** whitespaces *****/
 case 59:
 YY_RULE_SETUP
-#line 219 "mylexer.l"
+#line 202 "mylexer.l"
 
 	YY_BREAK
 /***** new line *****/
 case 60:
 /* rule 60 can match eol */
 YY_RULE_SETUP
-#line 223 "mylexer.l"
+#line 206 "mylexer.l"
 {
 									line_buffer = strdup(yytext);	/* save the next line */
 									yyless(1);						/* give back all but the \n to rescan */
@@ -1234,19 +1233,19 @@ YY_RULE_SETUP
 /***** end of file *****/
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(start):
-#line 231 "mylexer.l"
+#line 214 "mylexer.l"
 return EOF;
 	YY_BREAK
 /***** Unrecognized Token *****/
 case 61:
 YY_RULE_SETUP
-#line 235 "mylexer.l"
+#line 218 "mylexer.l"
 yyerror("\nSyntax error: Unrecognized Token:         %s\nLine %3d: %s\n\n", yytext, line_num, line_buffer);
 	YY_BREAK
 /* Creates the buffer for the first line. It is not used again */
 case 62:
 YY_RULE_SETUP
-#line 239 "mylexer.l"
+#line 222 "mylexer.l"
 {
 									line_buffer = strdup(yytext);	/* save the next line */
 									yyless(0);						/* give back all but the \n to rescan */
@@ -1255,10 +1254,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 246 "mylexer.l"
+#line 229 "mylexer.l"
 ECHO;
 	YY_BREAK
-#line 1262 "lex.yy.c"
+#line 1261 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2261,7 +2260,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 246 "mylexer.l"
+#line 229 "mylexer.l"
 
 /***********************/
 /****** user code ******/

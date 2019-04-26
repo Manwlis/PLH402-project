@@ -53,6 +53,8 @@ char* template(const char* pat, ...)
   va_end(arg);
 
 	fprintf(stderr,"\n");
+	
+	printf("%s \n", line_buffer);
 
   yyerror_count++;
  }

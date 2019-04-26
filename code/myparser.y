@@ -7,7 +7,6 @@
 	#include <stdarg.h>
 	#include <stdio.h>
 	#include <string.h>	
-	#include <stdbool.h>	
 	#include "cgen.h"
 
 	extern int yylex(void);
@@ -79,13 +78,24 @@
 
 %start program
 
+// dhlwseis metablhtwn
 %type <crepr> decl_list decl
-%type <crepr> body body_line
+//const
 %type <crepr> const_decl_body const_decl_list const_decl_init const_decl_id
-%type <crepr> type_spec
-%type <crepr> expr string
-%type <crepr> function
+//let
+//%type <crepr> let_decl_body let_decl_list let_decl_init let_decl_id
 
+// shnarthseis
+//%type <crepr> function
+
+// kuria domikh monada
+%type <crepr> body //body_line
+
+// genika
+%type <crepr> type_spec
+%type <crepr> expr string 
+%type <crepr> table_id table_init table_init_expr
+%type <crepr> bool
 
 %left ADD_POS_OP SUBTRACT_NEG_OP
 %left MULTIPLY_OP DIVIDE_OP MOD_OP
@@ -111,7 +121,7 @@ program: decl_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' b
 }
 ;
 
-// declaration start
+//////// dhlwsh metablhtwn
 decl_list: 
 decl_list decl { $$ = template("%s\n%s", $1, $2); }
 | decl { $$ = $1; }
@@ -119,63 +129,87 @@ decl_list decl { $$ = template("%s\n%s", $1, $2); }
 
 decl: 
 KW_CONST const_decl_body { $$ = template("const %s", $2); }
+//| KW_LET let_decl_body { $$ = template("%s", $2); }
 ;
 
+//////////////////////////////////////an einai na elenxei to typo twn dedomenwn allazw to type_spec kai to spaw se 4. 
+//8a prepei na spasoun kai ta table init
+// constants
 const_decl_body: 
 const_decl_list ':' type_spec ';' {  $$ = template("%s %s;", $3, $1); }
 ;
-
 const_decl_list: 
 const_decl_list ',' const_decl_init { $$ = template("%s, %s", $1, $3 );}
 | const_decl_init { $$ = $1; }
 ;
 
-const_decl_init: 
-const_decl_id { $$ = $1; }
-| const_decl_id ASSIGN_OP expr { $$ = template("%s=%s", $1, $3);}
-| const_decl_id ASSIGN_OP string { $$ = template("%s=%s", $1, $3);}
+const_decl_init:
+const_decl_id ASSIGN_OP expr { $$ = template("%s = %s", $1, $3);	/* oi sta8eres ipoxrewtika pernoun timh */}// swsto
+| table_id ASSIGN_OP '{' table_init '}' { $$ = template("%s = {%s}", $1, $4);}			// la8os sth metatroph
+| const_decl_id ASSIGN_OP bool { $$ = template("%s = %s", $1, $3);}										// swsto
+| table_id ASSIGN_OP bool { $$ = template("%s = %s", $1, $3);}														// la8os sth metatroph
+| const_decl_id ASSIGN_OP string { $$ = template("*%s = %s", $1, $3);}								// swsto
+| table_id ASSIGN_OP string { $$ = template("%s = %s", $1, $3);}													// swsto
+| const_decl_id ASSIGN_OP IDENTIFIER { $$ = template("%s = %s", $1, $3);}							// swsto
 ; 
 
 const_decl_id: 
 IDENTIFIER { $$ = $1; } 
-| IDENTIFIER '[' ']' { $$ = template("*%s", $1); /*isws 8elei kai me POS_INT mesa stis aggiles */}
-
+| IDENTIFIER '[' ']' { $$ = template("*%s", $1); /* pointer */}
 ;
-// declaration end
+
+
+
+
+//////// telos dhlwshs metablhtwn
+
 
 // tupoi dedomenwn
 type_spec:
 KW_INT { $$ = "int"; }
 | KW_REAL { $$ = "double"; }
-| KW_BOOL { $$ = "bool"; }
-| KW_STRING { $$ = "char*"; }
+| KW_BOOL { $$ = "int"; }
+| KW_STRING { $$ = "char"; }
+;
+
+expr:
+POS_INT { $$ = $1; }
+| POS_REAL { $$ = $1; }
 ;
 
 string:
 STRING { $$ = $1; }
 ;
 
+//pinakes
+table_id:
+IDENTIFIER '[' POS_INT ']' { $$ = template("%s[%s]", $1, $3); /* pinakas */}
+;
+//initialize pinaka
+table_init: 
+table_init table_init_expr { $$ = template("%s, %s", $1, $2); }
+| expr { $$ = $1; }
+| bool { $$ = $1; }
+;
+table_init_expr: 
+',' expr { $$ = $2; }
+| ',' bool { $$ = $2; }
+;
+
 expr: 
 POS_INT { $$ = $1; }
 | POS_REAL { $$ = $1; }
-| '(' expr ')' { $$ = template("(%s)", $2); }
-| expr '+' expr { $$ = template("%s + %s", $1, $3); }
-| expr '-' expr { $$ = template("%s - %s", $1, $3); }
-| expr '*' expr { $$ = template("%s * %s", $1, $3); }
-| expr '/' expr { $$ = template("%s / %s", $1, $3); }
-| expr '%' expr { $$ = template("%s % %s", $1, $3); }
 ;
 
+bool:
+KW_TRUE {$$ = "1";}
+| KW_FALSE {$$ = "0";}
+;
 
 body: 
-body body_line { $$ = template("%s\n%s", $1, $2); }
-| body_line { $$ = $1; }
-;
-
-function:
-IDENTIFIER '(' const_decl_id ')' { $$ = template("%s(%s)", $1, $3); }
-| IDENTIFIER '(' expr ')' { $$ = template("%s(%s)", $1, $3); }
-| IDENTIFIER '(' ')' { $$ = template("%s()", $1); }
+{ $$="";}
+//body body_line { $$ = template("%s\n%s", $1, $2); }
+//| body_line { $$ = $1; }
 ;
 
 
@@ -195,3 +229,26 @@ int main () {
 	
 }
 
+/* 
+| '(' expr ')' { $$ = template("(%s)", $2); }
+| expr '+' expr { $$ = template("%s + %s", $1, $3); }
+| expr '-' expr { $$ = template("%s - %s", $1, $3); }
+| expr '*' expr { $$ = template("%s * %s", $1, $3); }
+| expr '/' expr { $$ = template("%s / %s", $1, $3); }
+| expr '%' expr { $$ = template("%s % %s", $1, $3); } */
+/* 
+// lets
+let_decl_body:
+let_decl_list ':' type_spec ';' {  $$ = template("%s %s;", $3, $1); }
+;
+
+let_decl_list: 
+let_decl_list ',' let_decl_init { $$ = template("%s, %s", $1, $3 );}
+| let_decl_init { $$ = $1; }
+;
+
+let_decl_init: 
+let_decl_id { $$ = $1; }
+| let_decl_id ASSIGN_OP expr { $$ = template("%s=%s", $1, $3);}
+| let_decl_id ASSIGN_OP string { $$ = template("%s=%s", $1, $3);}
+;  */

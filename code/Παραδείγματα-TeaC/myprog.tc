@@ -1,7 +1,16 @@
 (* My first TeaC program *)
 
+-- const
 const message <- "Hello world!\n":  string;
+const c1 <- 1 : int;
+const c2 <- 1.1 : real;
+const c3 <- false, b <- true :bool;
+const c4 <- c1: int; 
+-- const array
+const ca1[2] <- {1 ,2}:int;
+const ca2[3] <- {true, false, true}:bool;
+const ca3[10] <- "message": string; 
 
 const start <- (): int => {
-  writeString(message);
+  
 }

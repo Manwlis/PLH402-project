@@ -73,12 +73,7 @@ extern int yydebug;
     KW_TRUE = 283,
     KW_FALSE = 284,
     IDENTIFIER = 285,
-    STRING = 286,
-    ADD_POS_OP = 287,
-    SUBTRACT_NEG_OP = 288,
-    MULTIPLY_OP = 289,
-    DIVIDE_OP = 290,
-    MOD_OP = 291
+    STRING = 286
   };
 #endif
 
@@ -91,7 +86,7 @@ union YYSTYPE
 
 	char* crepr;
 
-#line 95 "myparser.tab.h" /* yacc.c:1909  */
+#line 90 "myparser.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

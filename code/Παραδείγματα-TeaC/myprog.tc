@@ -11,6 +11,22 @@ const ca1[2] <- {1 ,2}:int;
 const ca2[3] <- {true, false, true}:bool;
 const ca3[10] <- "message": string; 
 
+-- let no init
+let l0 : int;
+let s[80] :string;
+-- let
+let message <- "Hello world!\n":  string;
+let l1 <- 1 : int;
+let l2 <- 1.1 : real;
+let l3 <- false, b <- true :bool;
+let l4 <- c1: int; 
+-- let array
+let la1[2] <- {1 ,2}:int;
+let la2[3] <- {true, false, true}:bool;
+let la3[10] <- "message": string; 
+
+
+
 const start <- (): int => {
   
 }

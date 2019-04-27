@@ -79,11 +79,11 @@
 %start program
 
 // dhlwseis metablhtwn
-%type <crepr> decl_list decl
+%type <crepr> decl_list decl decl_id
 //const
-%type <crepr> const_decl_body const_decl_list const_decl_init const_decl_id
+%type <crepr> const_decl_body const_decl_list const_decl_init
 //let
-//%type <crepr> let_decl_body let_decl_list let_decl_init let_decl_id
+%type <crepr> let_decl_body let_decl_list let_decl_init
 
 // shnarthseis
 //%type <crepr> function
@@ -94,11 +94,9 @@
 // genika
 %type <crepr> type_spec
 %type <crepr> expr string 
-%type <crepr> table_id table_init table_init_expr
+%type <crepr> table_id table_init table_init_values
 %type <crepr> bool
 
-%left ADD_POS_OP SUBTRACT_NEG_OP
-%left MULTIPLY_OP DIVIDE_OP MOD_OP
 
 
 %%
@@ -119,9 +117,17 @@ program: decl_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' b
 	  printf("int main() {\n%s\n} \n", $11);
 	}
 }
+| KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}' { 
+	// no data declaration
+		if(yyerror_count==0) {
+			puts(c_prologue); 
+			printf("/* program */ \n\n");
+			printf("int main() {\n%s\n} \n", $10);
+		}
+}
 ;
 
-//////// dhlwsh metablhtwn
+//////// dhlwsh dedomenwn
 decl_list: 
 decl_list decl { $$ = template("%s\n%s", $1, $2); }
 | decl { $$ = $1; }
@@ -129,39 +135,50 @@ decl_list decl { $$ = template("%s\n%s", $1, $2); }
 
 decl: 
 KW_CONST const_decl_body { $$ = template("const %s", $2); }
-//| KW_LET let_decl_body { $$ = template("%s", $2); }
+| KW_LET let_decl_body { $$ = template("%s", $2); }
 ;
 
-//////////////////////////////////////an einai na elenxei to typo twn dedomenwn allazw to type_spec kai to spaw se 4. 
-//8a prepei na spasoun kai ta table init
+decl_id: 
+IDENTIFIER { $$ = $1; } 
+| IDENTIFIER '[' ']' { $$ = template("*%s", $1); /* pointer */}
+;
+
 // constants
 const_decl_body: 
-const_decl_list ':' type_spec ';' {  $$ = template("%s %s;", $3, $1); }
+const_decl_list ':' type_spec ';' { $$ = template("%s %s;", $3, $1); }
 ;
 const_decl_list: 
 const_decl_list ',' const_decl_init { $$ = template("%s, %s", $1, $3 );}
 | const_decl_init { $$ = $1; }
 ;
-
 const_decl_init:
-const_decl_id ASSIGN_OP expr { $$ = template("%s = %s", $1, $3);	/* oi sta8eres ipoxrewtika pernoun timh */}// swsto
-| table_id ASSIGN_OP '{' table_init '}' { $$ = template("%s = {%s}", $1, $4);}			// la8os sth metatroph
-| const_decl_id ASSIGN_OP bool { $$ = template("%s = %s", $1, $3);}										// swsto
-| table_id ASSIGN_OP bool { $$ = template("%s = %s", $1, $3);}														// la8os sth metatroph
-| const_decl_id ASSIGN_OP string { $$ = template("*%s = %s", $1, $3);}								// swsto
-| table_id ASSIGN_OP string { $$ = template("%s = %s", $1, $3);}													// swsto
-| const_decl_id ASSIGN_OP IDENTIFIER { $$ = template("%s = %s", $1, $3);}							// swsto
-; 
-
-const_decl_id: 
-IDENTIFIER { $$ = $1; } 
-| IDENTIFIER '[' ']' { $$ = template("*%s", $1); /* pointer */}
+decl_id    ASSIGN_OP expr       { $$ = template("%s = %s", $1, $3); }	// i <- 1 / i <- 1.1
+| decl_id  ASSIGN_OP bool       { $$ = template("%s = %s", $1, $3); }	// i <- true
+| decl_id  ASSIGN_OP string     { $$ = template("*%s = %s", $1, $3); }	// i <- "message"
+| decl_id  ASSIGN_OP IDENTIFIER { $$ = template("%s = %s", $1, $3); }	// i <- x
+| table_id ASSIGN_OP string     { $$ = template("%s = %s", $1, $3); }	// i[10] <- "message"
+| table_id ASSIGN_OP table_init { $$ = template("%s = %s", $1, $3); }	// i[2] <- {1 , 2}
 ;
 
-
-
-
-//////// telos dhlwshs metablhtwn
+// lets
+let_decl_body:
+let_decl_list ':' type_spec ';' { $$ = template("%s %s;", $3, $1); }
+;
+let_decl_list: 
+let_decl_list ',' let_decl_init { $$ = template("%s, %s", $1, $3 );}
+| let_decl_init { $$ = $1; }
+;
+let_decl_init:
+decl_id                         { $$ = $1; }							// i
+| decl_id  ASSIGN_OP expr       { $$ = template("%s = %s", $1, $3); }	// i <- 1 / i <- 1.1
+| decl_id  ASSIGN_OP bool       { $$ = template("%s = %s", $1, $3); }	// i <- true
+| decl_id  ASSIGN_OP string     { $$ = template("*%s = %s", $1, $3); }	// i <- "message"
+| decl_id  ASSIGN_OP IDENTIFIER { $$ = template("%s = %s", $1, $3); }	// i <- x
+| table_id                      { $$ = $1; }							// i[10]
+| table_id ASSIGN_OP string     { $$ = template("%s = %s", $1, $3); }	// i[10] <- "message"
+| table_id ASSIGN_OP table_init { $$ = template("%s = %s", $1, $3); }	// i[2] <- {1 , 2}
+;
+//////// telos dhlwshs dedomenwn
 
 
 // tupoi dedomenwn
@@ -170,11 +187,6 @@ KW_INT { $$ = "int"; }
 | KW_REAL { $$ = "double"; }
 | KW_BOOL { $$ = "int"; }
 | KW_STRING { $$ = "char"; }
-;
-
-expr:
-POS_INT { $$ = $1; }
-| POS_REAL { $$ = $1; }
 ;
 
 string:
@@ -186,15 +198,16 @@ table_id:
 IDENTIFIER '[' POS_INT ']' { $$ = template("%s[%s]", $1, $3); /* pinakas */}
 ;
 //initialize pinaka
-table_init: 
-table_init table_init_expr { $$ = template("%s, %s", $1, $2); }
+table_init:
+'{' table_init_values '}' { $$ = template("{%s}", $2); }
+;
+table_init_values: 
+table_init_values ',' expr { $$ = template("%s, %s", $1, $3); }
+| table_init_values ',' bool { $$ = template("%s, %s", $1, $3); }
 | expr { $$ = $1; }
 | bool { $$ = $1; }
 ;
-table_init_expr: 
-',' expr { $$ = $2; }
-| ',' bool { $$ = $2; }
-;
+
 
 expr: 
 POS_INT { $$ = $1; }
@@ -236,19 +249,3 @@ int main () {
 | expr '*' expr { $$ = template("%s * %s", $1, $3); }
 | expr '/' expr { $$ = template("%s / %s", $1, $3); }
 | expr '%' expr { $$ = template("%s % %s", $1, $3); } */
-/* 
-// lets
-let_decl_body:
-let_decl_list ':' type_spec ';' {  $$ = template("%s %s;", $3, $1); }
-;
-
-let_decl_list: 
-let_decl_list ',' let_decl_init { $$ = template("%s, %s", $1, $3 );}
-| let_decl_init { $$ = $1; }
-;
-
-let_decl_init: 
-let_decl_id { $$ = $1; }
-| let_decl_id ASSIGN_OP expr { $$ = template("%s=%s", $1, $3);}
-| let_decl_id ASSIGN_OP string { $$ = template("%s=%s", $1, $3);}
-;  */

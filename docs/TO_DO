@@ -1,6 +1,4 @@
-pointer stis dhlwseis constants
-let
-
+pointer stis dhlwseis dedomenwn
 
 
 bison -d -v -r all myparser.y

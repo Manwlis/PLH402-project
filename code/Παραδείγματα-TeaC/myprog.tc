@@ -1,7 +1,7 @@
 (* My first TeaC program *)
 
 -- const
-const message <- "Hello world!\n":  string;
+const message[] <- "Hello world!\n":  string;
 const c1 <- 1 : int;
 const c2 <- 1.1 : real;
 const c3 <- false, b <- true :bool;
@@ -15,17 +15,25 @@ const ca3[10] <- "message": string;
 let l0 : int;
 let s[80] :string;
 -- let
-let message <- "Hello world!\n":  string;
+let message <- "n":  string;
 let l1 <- 1 : int;
 let l2 <- 1.1 : real;
 let l3 <- false, b <- true :bool;
 let l4 <- c1: int; 
+let l5 : []int;
 -- let array
 let la1[2] <- {1 ,2}:int;
 let la2[3] <- {true, false, true}:bool;
 let la3[10] <- "message": string; 
 
-
+-- functions
+const f1 <- (x:real):real => {}
+const f2 <- (s[]: string): int =>{}
+const f3 <- (x:real):[]real => {}
+const f4 <- (x:real, y : int, s[]: string):[]bool => {}
+const f5 <- ():bool => {}
+const f6 <- (r1, r2:real, s[]: string):real => {}
+const f7 <- (i1, i2, int3, iefcescv:int, s1[],s2: string):real => {}
 
 const start <- (): int => {
   

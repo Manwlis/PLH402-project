@@ -1,6 +1,8 @@
-pointer stis dhlwseis dedomenwn
-
+swma shnarthsewn
+swma main
+mege8os malloc
 
 bison -d -v -r all myparser.y
 flex mylexer.l
 gcc -o mycomp myparser.tab.c lex.yy.c cgen.c -lfl
+./mycomp < /home/manwlhs/Documents/GitHub/PLH402-project/code/Παραδείγματα-TeaC/myprog.tc > ex.c

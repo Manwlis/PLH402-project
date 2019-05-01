@@ -86,14 +86,16 @@
 %type <crepr> let_decl_body let_decl_list let_decl_init
 
 // shnarthseis
-//%type <crepr> function
+%type <crepr> func_list func 
+%type <crepr> func_param_list func_param param_list
+%type <crepr> func_body
 
 // kuria domikh monada
 %type <crepr> body //body_line
 
 // genika
 %type <crepr> type_spec
-%type <crepr> expr string 
+%type <crepr> expr 
 %type <crepr> table_id table_init table_init_values
 %type <crepr> bool
 
@@ -104,13 +106,32 @@
 /**** Grammar rules ****/
 /***********************/
 
+
+program: 
+// declarations
+// functions
 // const start <- (): int => { body }
-program: decl_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}' { 
-/* We have a successful parse! 
-  Check for any errors and generate output. 
-*/
+decl_list func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}' { 
 	if(yyerror_count==0) {
-    // include the teaclib.h file
+	  puts(c_prologue); 
+	  printf("/* program */ \n\n");
+	  printf("%s\n\n", $1);
+	  printf("%s\n\n", $2);
+	  printf("int main() {\n%s\n} \n", $12);
+	}
+}
+| func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}' { 
+	// no data declaration
+	if(yyerror_count==0) {
+	  puts(c_prologue); 
+	  printf("/* program */ \n\n");
+	  printf("%s\n\n", $1);
+	  printf("int main() {\n%s\n} \n", $11);
+	}
+}
+| decl_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}' { 
+	// no functions
+	if(yyerror_count==0) {
 	  puts(c_prologue); 
 	  printf("/* program */ \n\n");
 	  printf("%s\n\n", $1);
@@ -119,6 +140,7 @@ program: decl_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' b
 }
 | KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}' { 
 	// no data declaration
+	// no functions
 		if(yyerror_count==0) {
 			puts(c_prologue); 
 			printf("/* program */ \n\n");
@@ -138,10 +160,6 @@ KW_CONST const_decl_body { $$ = template("const %s", $2); }
 | KW_LET let_decl_body { $$ = template("%s", $2); }
 ;
 
-decl_id: 
-IDENTIFIER { $$ = $1; } 
-| IDENTIFIER '[' ']' { $$ = template("*%s", $1); /* pointer */}
-;
 
 // constants
 const_decl_body: 
@@ -152,12 +170,11 @@ const_decl_list ',' const_decl_init { $$ = template("%s, %s", $1, $3 );}
 | const_decl_init { $$ = $1; }
 ;
 const_decl_init:
-decl_id    ASSIGN_OP expr       { $$ = template("%s = %s", $1, $3); }	// i <- 1 / i <- 1.1
-| decl_id  ASSIGN_OP bool       { $$ = template("%s = %s", $1, $3); }	// i <- true
-| decl_id  ASSIGN_OP string     { $$ = template("*%s = %s", $1, $3); }	// i <- "message"
-| decl_id  ASSIGN_OP IDENTIFIER { $$ = template("%s = %s", $1, $3); }	// i <- x
-| table_id ASSIGN_OP string     { $$ = template("%s = %s", $1, $3); }	// i[10] <- "message"
-| table_id ASSIGN_OP table_init { $$ = template("%s = %s", $1, $3); }	// i[2] <- {1 , 2}
+decl_id   ASSIGN_OP expr       { $$ = template("%s = %s", $1, $3); }	// i <- 1 / i <- 1.1
+| decl_id ASSIGN_OP bool       { $$ = template("%s = %s", $1, $3); }	// i <- true
+| decl_id ASSIGN_OP STRING     { $$ = template("%s = %s", $1, $3); }	// i <- "message"
+| decl_id ASSIGN_OP IDENTIFIER { $$ = template("%s = %s", $1, $3); }	// i <- x
+| decl_id ASSIGN_OP table_init { $$ = template("%s = %s", $1, $3); }	// i[2] <- {1 , 2}
 ;
 
 // lets
@@ -169,16 +186,82 @@ let_decl_list ',' let_decl_init { $$ = template("%s, %s", $1, $3 );}
 | let_decl_init { $$ = $1; }
 ;
 let_decl_init:
-decl_id                         { $$ = $1; }							// i
-| decl_id  ASSIGN_OP expr       { $$ = template("%s = %s", $1, $3); }	// i <- 1 / i <- 1.1
-| decl_id  ASSIGN_OP bool       { $$ = template("%s = %s", $1, $3); }	// i <- true
-| decl_id  ASSIGN_OP string     { $$ = template("*%s = %s", $1, $3); }	// i <- "message"
-| decl_id  ASSIGN_OP IDENTIFIER { $$ = template("%s = %s", $1, $3); }	// i <- x
-| table_id                      { $$ = $1; }							// i[10]
-| table_id ASSIGN_OP string     { $$ = template("%s = %s", $1, $3); }	// i[10] <- "message"
-| table_id ASSIGN_OP table_init { $$ = template("%s = %s", $1, $3); }	// i[2] <- {1 , 2}
+decl_id                        { $$ = $1; }								// i
+| decl_id ASSIGN_OP expr       { $$ = template("%s = %s", $1, $3); }	// i <- 1 / i <- 1.1
+| decl_id ASSIGN_OP bool       { $$ = template("%s = %s", $1, $3); }	// i <- true
+| decl_id ASSIGN_OP STRING     { $$ = template("%s = %s", $1, $3); }	// i <- "message"
+| decl_id ASSIGN_OP IDENTIFIER { $$ = template("%s = %s", $1, $3); }	// i <- x
+| decl_id ASSIGN_OP table_init { $$ = template("%s = %s", $1, $3); }	// i[2] <- {1 , 2}
 ;
 //////// telos dhlwshs dedomenwn
+
+
+//////// synarthseis
+func_list: 
+func_list func { $$ = template("%s\n\n%s", $1, $2); }
+| func { $$ = $1; }
+;
+func: 
+KW_CONST decl_id ASSIGN_OP '(' func_param_list ')' ':' type_spec ARROW_OP '{' func_body '}'	{
+	$$ = template("%s %s (%s) {\n%s\n}", $8, $2, $5, $11);
+}
+;
+
+func_param_list:
+{ $$="";}
+| func_param_list ',' func_param { $$ = template("%s, %s", $1, $3); }
+| func_param { $$ = $1; }
+;
+func_param:
+param_list ':' type_spec { 
+	
+	// save the strings
+	char *param_list = strdup($1);
+	char *type_spec = strdup($3);
+
+	// count the parameters
+	int count = 0;
+	int i = 0;
+	while (param_list[i] != '\0') { 
+      if (param_list[i] == ',')
+         count++;
+      i++;
+   }
+	// ipologismos mege8ous telikou string kai malloc
+	if (count == 1)
+		char *final_string = (char *) malloc(strlen(param_list) + (count * strlen(type_spec)));
+	else
+		char *final_string = (char *) malloc(strlen(param_list) + (count * (strlen(type_spec) + 2)));
+
+	// break string to individual parameters
+	char *temp = strtok(param_list, ",");
+	while( temp != NULL){
+
+		// concat parameters with their types and create C format
+		strcat(final_string, type_spec);
+		strcat(final_string, " ");
+		strcat(final_string, temp);
+		//next ','
+		temp = strtok(NULL, ",");
+		// put ',' only if there is another parameter
+		if( temp != NULL)
+			strcat(final_string, ", ");
+	}
+
+	// return complete string
+	$$ = strdup(final_string);
+	free(final_string);
+}
+;
+param_list:
+param_list ',' decl_id { $$ = template("%s,%s", $1, $3); }
+| decl_id { $$ = $1; }
+;
+
+func_body:
+{ $$="";}
+;
+//////// synarthseis telos
 
 
 // tupoi dedomenwn
@@ -187,17 +270,25 @@ KW_INT { $$ = "int"; }
 | KW_REAL { $$ = "double"; }
 | KW_BOOL { $$ = "int"; }
 | KW_STRING { $$ = "char"; }
+| '[' ']' KW_INT { $$ = "int*"; }
+| '[' ']' KW_REAL { $$ = "double*"; }
+| '[' ']' KW_BOOL { $$ = "int*"; }
+| '[' ']' KW_STRING { $$ = "char*"; }
 ;
 
-string:
-STRING { $$ = $1; }
+
+// ids
+decl_id: 
+IDENTIFIER { $$ = $1; } 
+| IDENTIFIER '[' ']' { $$ = template("*%s", $1); /* pointer */}
+| table_id { $$ = $1; }
 ;
 
-//pinakes
+// pinakes
 table_id:
 IDENTIFIER '[' POS_INT ']' { $$ = template("%s[%s]", $1, $3); /* pinakas */}
 ;
-//initialize pinaka
+// initialize pinaka
 table_init:
 '{' table_init_values '}' { $$ = template("{%s}", $2); }
 ;

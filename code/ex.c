@@ -24,11 +24,17 @@ int la2[3] = {1, 0, 1};
 char la3[10] = "message";
 
 double f1 (double x) {
+    int y = 1;
 
+
+
+    return x;
 }
 
 int f2 (char *s) {
 
+
+    return;
 }
 
 double* f3 (double x) {

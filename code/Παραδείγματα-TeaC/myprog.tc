@@ -27,8 +27,11 @@ let la2[3] <- {true, false, true}:bool;
 let la3[10] <- "message": string; 
 
 -- functions
-const f1 <- (x:real):real => {}
-const f2 <- (s[]: string): int =>{}
+const f1 <- (x:real):real => { 
+	let y <- 1 : int;
+	return x; 
+}
+const f2 <- (s[]: string): int =>{ return; }
 const f3 <- (x:real):[]real => {}
 const f4 <- (x:real, y : int, s[]: string):[]bool => {}
 const f5 <- ():bool => {}

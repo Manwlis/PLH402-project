@@ -26,7 +26,6 @@
 	char* crepr;
 }
 
-
 /***** keywords *****/
 %token KW_INT
 %token KW_REAL
@@ -45,7 +44,6 @@
 %token KW_RETURN
 %token KW_START
 
-
 /***** operators *****/
 /* relational */
 %token DIFFERENT_OP
@@ -59,7 +57,6 @@
 /* 	 */
 %token ARROW_OP
 
-
 /***** values *****/
 /* legal formats */
 %token <crepr> POS_INT
@@ -67,10 +64,8 @@
 %token KW_TRUE
 %token KW_FALSE
 
-
 /***** ids *****/
 %token <crepr> IDENTIFIER
-
 
 /***** strings *****/
 %token <crepr> STRING
@@ -78,34 +73,32 @@
 
 %start program
 
-// dhlwseis metablhtwn
-%type <crepr> decl_list decl decl_id
+// dhlwseis dedomenwn
+%type <crepr> decl_list decl
 //const
 %type <crepr> const_decl_body const_decl_list const_decl_init
 //let
 %type <crepr> let_decl_body let_decl_list let_decl_init
 
-// shnarthseis
+// dhlwseis shnarthsewn
 %type <crepr> func_list func 
 %type <crepr> func_param_list func_param param_list
-%type <crepr> func_body
 
 // kuria domikh monada
-%type <crepr> body //body_line
+%type <crepr> body body_decl_list commands return
 
 // genika
 %type <crepr> type_spec
+%type <crepr> decl_id
 %type <crepr> expr 
 %type <crepr> table_id table_init table_init_values
 %type <crepr> bool
-
 
 
 %%
 /***********************/
 /**** Grammar rules ****/
 /***********************/
-
 
 program: 
 // declarations
@@ -149,7 +142,7 @@ decl_list func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' 
 }
 ;
 
-//////// dhlwsh dedomenwn
+//////// dhlwsh dedomenwn ////////
 decl_list: 
 decl_list decl { $$ = template("%s\n%s", $1, $2); }
 | decl { $$ = $1; }
@@ -159,7 +152,6 @@ decl:
 KW_CONST const_decl_body { $$ = template("const %s", $2); }
 | KW_LET let_decl_body { $$ = template("%s", $2); }
 ;
-
 
 // constants
 const_decl_body: 
@@ -171,9 +163,7 @@ const_decl_list ',' const_decl_init { $$ = template("%s, %s", $1, $3 );}
 ;
 const_decl_init:
 decl_id   ASSIGN_OP expr       { $$ = template("%s = %s", $1, $3); }	// i <- 1 / i <- 1.1
-| decl_id ASSIGN_OP bool       { $$ = template("%s = %s", $1, $3); }	// i <- true
 | decl_id ASSIGN_OP STRING     { $$ = template("%s = %s", $1, $3); }	// i <- "message"
-| decl_id ASSIGN_OP IDENTIFIER { $$ = template("%s = %s", $1, $3); }	// i <- x
 | decl_id ASSIGN_OP table_init { $$ = template("%s = %s", $1, $3); }	// i[2] <- {1 , 2}
 ;
 
@@ -188,21 +178,19 @@ let_decl_list ',' let_decl_init { $$ = template("%s, %s", $1, $3 );}
 let_decl_init:
 decl_id                        { $$ = $1; }								// i
 | decl_id ASSIGN_OP expr       { $$ = template("%s = %s", $1, $3); }	// i <- 1 / i <- 1.1
-| decl_id ASSIGN_OP bool       { $$ = template("%s = %s", $1, $3); }	// i <- true
 | decl_id ASSIGN_OP STRING     { $$ = template("%s = %s", $1, $3); }	// i <- "message"
-| decl_id ASSIGN_OP IDENTIFIER { $$ = template("%s = %s", $1, $3); }	// i <- x
 | decl_id ASSIGN_OP table_init { $$ = template("%s = %s", $1, $3); }	// i[2] <- {1 , 2}
 ;
-//////// telos dhlwshs dedomenwn
+//////// dhlwshs dedomenwn telos ////////
 
 
-//////// synarthseis
+//////// dhlwsh synarthsewn ////////
 func_list: 
 func_list func { $$ = template("%s\n\n%s", $1, $2); }
 | func { $$ = $1; }
 ;
 func: 
-KW_CONST decl_id ASSIGN_OP '(' func_param_list ')' ':' type_spec ARROW_OP '{' func_body '}'	{
+KW_CONST decl_id ASSIGN_OP '(' func_param_list ')' ':' type_spec ARROW_OP '{' body '}'	{
 	$$ = template("%s %s (%s) {\n%s\n}", $8, $2, $5, $11);
 }
 ;
@@ -228,10 +216,7 @@ param_list ':' type_spec {
       i++;
    }
 	// ipologismos mege8ous telikou string kai malloc
-	if (count == 1)
-		char *final_string = (char *) malloc(strlen(param_list) + (count * strlen(type_spec)));
-	else
-		char *final_string = (char *) malloc(strlen(param_list) + (count * (strlen(type_spec) + 2)));
+	char *final_string = (char *) malloc(strlen(param_list) + (count * (strlen(type_spec) + 2)));
 
 	// break string to individual parameters
 	char *temp = strtok(param_list, ",");
@@ -257,11 +242,31 @@ param_list:
 param_list ',' decl_id { $$ = template("%s,%s", $1, $3); }
 | decl_id { $$ = $1; }
 ;
+//////// dhlwsh synarthsewn telos ////////
 
-func_body:
+
+//////// swma shnarthsewn ////////
+body:
+commands                         { $$ = $1; }
+| body_decl_list commands        { $$ = template("%s\n\n%s", $1, $2); }
+| commands return                { $$ = template("%s\n\n%s", $1, $2); }
+| body_decl_list commands return { $$ = template("%s\n\n%s\n\n%s", $1, $2, $3); }
+;
+
+body_decl_list: 
+body_decl_list decl { $$ = template("%s\n%s", $1, $2); }
+| decl { $$ = template("    %s", $1); }
+;
+
+commands:
 { $$="";}
 ;
-//////// synarthseis telos
+
+return:
+KW_RETURN expr ';'{ $$ = template("    return %s;", $2); }
+| KW_RETURN ';'{ $$ = "    return;"; }
+;
+//////// swma shnarthsewn telos ////////
 
 
 // tupoi dedomenwn
@@ -294,26 +299,20 @@ table_init:
 ;
 table_init_values: 
 table_init_values ',' expr { $$ = template("%s, %s", $1, $3); }
-| table_init_values ',' bool { $$ = template("%s, %s", $1, $3); }
 | expr { $$ = $1; }
-| bool { $$ = $1; }
 ;
 
-
+// expresions
 expr: 
 POS_INT { $$ = $1; }
 | POS_REAL { $$ = $1; }
+| bool { $$ = $1; }
+| decl_id { $$ = $1; }
 ;
 
 bool:
 KW_TRUE {$$ = "1";}
 | KW_FALSE {$$ = "0";}
-;
-
-body: 
-{ $$="";}
-//body body_line { $$ = template("%s\n%s", $1, $2); }
-//| body_line { $$ = $1; }
 ;
 
 
@@ -333,10 +332,3 @@ int main () {
 	
 }
 
-/* 
-| '(' expr ')' { $$ = template("(%s)", $2); }
-| expr '+' expr { $$ = template("%s + %s", $1, $3); }
-| expr '-' expr { $$ = template("%s - %s", $1, $3); }
-| expr '*' expr { $$ = template("%s * %s", $1, $3); }
-| expr '/' expr { $$ = template("%s / %s", $1, $3); }
-| expr '%' expr { $$ = template("%s % %s", $1, $3); } */

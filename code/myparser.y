@@ -85,15 +85,23 @@
 %type <crepr> func_param_list func_param param_list
 
 // kuria domikh monada
-%type <crepr> body body_decl_list commands return
+%type <crepr> body body_decl_list instr_list return
+// entoles
+%type <crepr> instr instr_func_call empty
 
 // genika
 %type <crepr> type_spec
 %type <crepr> decl_id
-%type <crepr> expr 
-%type <crepr> table_id table_init table_init_values
+// expresions
+%type <crepr> expr term func_call func_stm
 %type <crepr> bool
+// pinakes
+%type <crepr> table_id table_init table_init_values
 
+%left '=' '<' DIFFERENT_OP EQUAL_LESS_OP
+%left AND_OP OR_OP
+%left '-' '+'
+%left '*' '/' '%'
 
 %%
 /***********************/
@@ -247,27 +255,36 @@ param_list ',' decl_id { $$ = template("%s,%s", $1, $3); }
 
 //////// swma shnarthsewn ////////
 body:
-commands                         { $$ = $1; }
-| body_decl_list commands        { $$ = template("%s\n\n%s", $1, $2); }
-| commands return                { $$ = template("%s\n\n%s", $1, $2); }
-| body_decl_list commands return { $$ = template("%s\n\n%s\n\n%s", $1, $2, $3); }
+instr_list                         { $$ = $1; }
+| body_decl_list instr_list        { $$ = template("%s\n\n%s", $1, $2); }
+| instr_list return                { $$ = template("%s\n\n%s", $1, $2); }
+| body_decl_list instr_list return { $$ = template("%s\n\n%s\n\n%s", $1, $2, $3); }
 ;
 
 body_decl_list: 
-body_decl_list decl { $$ = template("%s\n%s", $1, $2); }
-| decl { $$ = template("    %s", $1); }
+body_decl_list decl	               { $$ = template("%s\n    %s", $1, $2); }
+| decl                             { $$ = template("    %s", $1); }
 ;
 
-commands:
-{ $$="";}
+instr_list:
+instr_list instr	               { $$ = template("%s\n    %s", $1, $2); }
+| instr                            { $$ = template("    %s", $1); }
+| empty ///////////////////////////////////////////////////////////na figei///////////////////////////////////////////////////////////
+;
+instr:
+instr_func_call	                   { $$ = $1; }
+;
+instr_func_call:
+func_call ';'                      { $$ = template("%s;", $1); }
 ;
 
 return:
-KW_RETURN expr ';'{ $$ = template("    return %s;", $2); }
-| KW_RETURN ';'{ $$ = "    return;"; }
+KW_RETURN expr ';'                 { $$ = template("    return %s;", $2); }
+| KW_RETURN ';'                    { $$ = "    return;"; }
 ;
 //////// swma shnarthsewn telos ////////
 
+empty:{ $$="";};///////////////////////////////////////////////////////////na figei///////////////////////////////////////////////////////////
 
 // tupoi dedomenwn
 type_spec:
@@ -291,7 +308,7 @@ IDENTIFIER { $$ = $1; }
 
 // pinakes
 table_id:
-IDENTIFIER '[' POS_INT ']' { $$ = template("%s[%s]", $1, $3); /* pinakas */}
+IDENTIFIER '[' expr ']' { $$ = template("%s[%s]", $1, $3); /* pinakas */}
 ;
 // initialize pinaka
 table_init:
@@ -302,18 +319,52 @@ table_init_values ',' expr { $$ = template("%s, %s", $1, $3); }
 | expr { $$ = $1; }
 ;
 
-// expresions
+//////// expresions ////////
 expr: 
-POS_INT { $$ = $1; }
-| POS_REAL { $$ = $1; }
-| bool { $$ = $1; }
-| decl_id { $$ = $1; }
+term '+' expr				{ $$ = template("%s + %s", $1, $3); }		// pros8esh
+| term '-' expr				{ $$ = template("%s - %s", $1, $3); }		// afairesh
+| term '*' expr				{ $$ = template("%s * %s", $1, $3); }		// pollaplasiasmos
+| term '/' expr				{ $$ = template("%s / %s", $1, $3); }		// diairesh
+| term '%' expr				{ $$ = template("%s %% %s", $1, $3); }		// modulo
+| term '=' expr				{ $$ = template("%s == %s", $1, $3); }		// equal
+| term '<' expr				{ $$ = template("%s < %s", $1, $3); }		// less
+| term EQUAL_LESS_OP expr	{ $$ = template("%s <= %s", $1, $3); }		// equal less
+| term DIFFERENT_OP expr	{ $$ = template("%s != %s", $1, $3); }		// different
+| term AND_OP expr			{ $$ = template("%s && %s", $1, $3); }		// and
+| term OR_OP expr			{ $$ = template("%s || %s", $1, $3); }		// or
+| term	         			{ $$ = $1; }
+;
+
+term:
+POS_INT						{ $$ = $1; }								// int
+| POS_REAL					{ $$ = $1; }								// real
+| bool						{ $$ = $1; }								// bool
+| decl_id					{ $$ = $1; }								// metablhth
+| func_call					{ $$ = $1; }								// kalesma shnarthshs
+| '(' expr ')'				{ $$ = template("(%s)", $2); }				// ()
+| '-' term					{ $$ = template("-%s", $2); }				// proshmo -
+| '+' term					{ $$ = template("+%s", $2); }				// proshmo +
+| NOT_OP term				{ $$ = template("! %s", $2); }				// not
 ;
 
 bool:
 KW_TRUE {$$ = "1";}
 | KW_FALSE {$$ = "0";}
 ;
+
+// kalesma shnarthshs
+func_call:
+IDENTIFIER '(' func_stm ')' { $$ = template("%s(%s)", $1, $3);}
+| IDENTIFIER '(' ')' { $$ = template("%s()", $1);}
+;
+func_stm: 
+func_stm ',' expr { $$ = template("%s, %s", $1, $3); }
+| expr { $$ = $1; }
+;
+//////// expresions telos ////////
+
+
+
 
 
 %%

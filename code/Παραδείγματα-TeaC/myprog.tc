@@ -16,7 +16,7 @@ let l0 : int;
 let s[80] :string;
 -- let
 let message <- "n":  string;
-let l1 <- 1 : int;
+let l1 <- -1 : int;
 let l2 <- 1.1 : real;
 let l3 <- false, b <- true :bool;
 let l4 <- c1: int; 
@@ -28,7 +28,7 @@ let la3[10] <- "message": string;
 
 -- functions
 const f1 <- (x:real):real => { 
-	let y <- 1 : int;
+	let y <- f1(l1) : int;
 	return x; 
 }
 const f2 <- (s[]: string): int =>{ return; }
@@ -36,7 +36,19 @@ const f3 <- (x:real):[]real => {}
 const f4 <- (x:real, y : int, s[]: string):[]bool => {}
 const f5 <- ():bool => {}
 const f6 <- (r1, r2:real, s[]: string):real => {}
-const f7 <- (i1, i2, int3, iefcescv:int, s1[],s2: string):real => {}
+const f7 <- (i1, i2, int3, iefcescv:int, s1[],s2: string):real => {
+
+
+	let l1 <- -a : int;						-- αντίθετος της μεταβλητής a
+	let l1 <- a + b * (b / a) : int;		-- αριθμητική έκφραση
+	let l1 <- 4 + 50.0*x / 2.45 : int;		-- αριθμητική έκφραση
+	let l1 <- (a+1) % cube(b+3) : int;		-- αριθμητική έκφραση με κλήση συνάρτησης
+	let l1 <- (a <= b) and (d <= c) : int;	-- τελεστές λογικοί με σχεσιακούς
+	let l1 <- (c+a) != (2*d) : int;			-- τελεστές αριθμητικοί με σχεσιακούς
+	let l1 <- a + b[(k+1)*2] : int;			-- αριθμητική έκφραση με πίνακα
+
+	f6(i1, i2, int3);
+}
 
 const start <- (): int => {
   

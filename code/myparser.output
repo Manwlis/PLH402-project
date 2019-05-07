@@ -8,11 +8,14 @@ Terminals unused in grammar
    KW_LOOP
    KW_POOL
    KW_BREAK
-   DIFFERENT_OP
-   EQUAL_LESS_OP
-   AND_OP
-   OR_OP
-   NOT_OP
+
+
+State 154 conflicts: 1 shift/reduce
+State 163 conflicts: 1 shift/reduce
+State 169 conflicts: 1 shift/reduce
+State 170 conflicts: 1 shift/reduce
+State 172 conflicts: 1 shift/reduce
+State 182 conflicts: 1 shift/reduce
 
 
 Grammar
@@ -63,65 +66,104 @@ Grammar
    29 param_list: param_list ',' decl_id
    30           | decl_id
 
-   31 body: commands
-   32     | body_decl_list commands
-   33     | commands return
-   34     | body_decl_list commands return
+   31 body: instr_list
+   32     | body_decl_list instr_list
+   33     | instr_list return
+   34     | body_decl_list instr_list return
 
    35 body_decl_list: body_decl_list decl
    36               | decl
 
-   37 commands: %empty
+   37 instr_list: instr_list instr
+   38           | instr
+   39           | empty
 
-   38 return: KW_RETURN expr ';'
-   39       | KW_RETURN ';'
+   40 instr: instr_func_call
 
-   40 type_spec: KW_INT
-   41          | KW_REAL
-   42          | KW_BOOL
-   43          | KW_STRING
-   44          | '[' ']' KW_INT
-   45          | '[' ']' KW_REAL
-   46          | '[' ']' KW_BOOL
-   47          | '[' ']' KW_STRING
+   41 instr_func_call: func_call ';'
 
-   48 decl_id: IDENTIFIER
-   49        | IDENTIFIER '[' ']'
-   50        | table_id
+   42 empty: %empty
 
-   51 table_id: IDENTIFIER '[' POS_INT ']'
+   43 return: KW_RETURN expr ';'
+   44       | KW_RETURN ';'
 
-   52 table_init: '{' table_init_values '}'
+   45 type_spec: KW_INT
+   46          | KW_REAL
+   47          | KW_BOOL
+   48          | KW_STRING
+   49          | '[' ']' KW_INT
+   50          | '[' ']' KW_REAL
+   51          | '[' ']' KW_BOOL
+   52          | '[' ']' KW_STRING
 
-   53 table_init_values: table_init_values ',' expr
-   54                  | expr
+   53 decl_id: IDENTIFIER
+   54        | IDENTIFIER '[' ']'
+   55        | table_id
 
-   55 expr: POS_INT
-   56     | POS_REAL
-   57     | bool
-   58     | decl_id
+   56 table_id: IDENTIFIER '[' expr ']'
 
-   59 bool: KW_TRUE
-   60     | KW_FALSE
+   57 table_init: '{' table_init_values '}'
+
+   58 table_init_values: table_init_values ',' expr
+   59                  | expr
+
+   60 expr: term '+' expr
+   61     | term '-' expr
+   62     | term '*' expr
+   63     | term '/' expr
+   64     | term '%' expr
+   65     | term '=' expr
+   66     | term '<' expr
+   67     | term EQUAL_LESS_OP expr
+   68     | term DIFFERENT_OP expr
+   69     | term AND_OP expr
+   70     | term OR_OP expr
+   71     | term
+
+   72 term: POS_INT
+   73     | POS_REAL
+   74     | bool
+   75     | decl_id
+   76     | func_call
+   77     | '(' expr ')'
+   78     | '-' term
+   79     | '+' term
+   80     | NOT_OP term
+
+   81 bool: KW_TRUE
+   82     | KW_FALSE
+
+   83 func_call: IDENTIFIER '(' func_stm ')'
+   84          | IDENTIFIER '(' ')'
+
+   85 func_stm: func_stm ',' expr
+   86         | expr
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
-'(' (40) 1 2 3 4 24
-')' (41) 1 2 3 4 24
-',' (44) 10 16 26 29 53
+'%' (37) 64
+'(' (40) 1 2 3 4 24 77 83 84
+')' (41) 1 2 3 4 24 77 83 84
+'*' (42) 62
+'+' (43) 60 79
+',' (44) 10 16 26 29 58 85
+'-' (45) 61 78
+'/' (47) 63
 ':' (58) 1 2 3 4 9 15 24 28
-';' (59) 9 15 38 39
-'[' (91) 44 45 46 47 49 51
-']' (93) 44 45 46 47 49 51
-'{' (123) 1 2 3 4 24 52
-'}' (125) 1 2 3 4 24 52
+';' (59) 9 15 41 43 44
+'<' (60) 66
+'=' (61) 65
+'[' (91) 49 50 51 52 54 56
+']' (93) 49 50 51 52 54 56
+'{' (123) 1 2 3 4 24 57
+'}' (125) 1 2 3 4 24 57
 error (256)
-KW_INT (258) 1 2 3 4 40 44
-KW_REAL (259) 41 45
-KW_BOOL (260) 42 46
-KW_STRING (261) 43 47
+KW_INT (258) 1 2 3 4 45 49
+KW_REAL (259) 46 50
+KW_BOOL (260) 47 51
+KW_STRING (261) 48 52
 KW_IF (262)
 KW_THEN (263)
 KW_ELSE (264)
@@ -132,77 +174,91 @@ KW_POOL (268)
 KW_CONST (269) 1 2 3 4 7 24
 KW_LET (270) 8
 KW_BREAK (271)
-KW_RETURN (272) 38 39
+KW_RETURN (272) 43 44
 KW_START (273) 1 2 3 4
-DIFFERENT_OP (274)
-EQUAL_LESS_OP (275)
-AND_OP (276)
-OR_OP (277)
-NOT_OP (278)
+DIFFERENT_OP (274) 68
+EQUAL_LESS_OP (275) 67
+AND_OP (276) 69
+OR_OP (277) 70
+NOT_OP (278) 80
 ASSIGN_OP (279) 1 2 3 4 12 13 14 19 20 21 24
 ARROW_OP (280) 1 2 3 4 24
-POS_INT (281) 51 55
-POS_REAL (282) 56
-KW_TRUE (283) 59
-KW_FALSE (284) 60
-IDENTIFIER (285) 48 49 51
+POS_INT (281) 72
+POS_REAL (282) 73
+KW_TRUE (283) 81
+KW_FALSE (284) 82
+IDENTIFIER (285) 53 54 56 83 84
 STRING (286) 13 20
 
 
 Nonterminals, with rules where they appear
 
-$accept (41)
+$accept (48)
     on left: 0
-program (42)
+program (49)
     on left: 1 2 3 4, on right: 0
-decl_list (43)
+decl_list (50)
     on left: 5 6, on right: 1 3 5
-decl (44)
+decl (51)
     on left: 7 8, on right: 5 6 35 36
-const_decl_body (45)
+const_decl_body (52)
     on left: 9, on right: 7
-const_decl_list (46)
+const_decl_list (53)
     on left: 10 11, on right: 9 10
-const_decl_init (47)
+const_decl_init (54)
     on left: 12 13 14, on right: 10 11
-let_decl_body (48)
+let_decl_body (55)
     on left: 15, on right: 8
-let_decl_list (49)
+let_decl_list (56)
     on left: 16 17, on right: 15 16
-let_decl_init (50)
+let_decl_init (57)
     on left: 18 19 20 21, on right: 16 17
-func_list (51)
+func_list (58)
     on left: 22 23, on right: 1 2 22
-func (52)
+func (59)
     on left: 24, on right: 22 23
-func_param_list (53)
+func_param_list (60)
     on left: 25 26 27, on right: 24 26
-func_param (54)
+func_param (61)
     on left: 28, on right: 26 27
-param_list (55)
+param_list (62)
     on left: 29 30, on right: 28 29
-body (56)
+body (63)
     on left: 31 32 33 34, on right: 1 2 3 4 24
-body_decl_list (57)
+body_decl_list (64)
     on left: 35 36, on right: 32 34 35
-commands (58)
-    on left: 37, on right: 31 32 33 34
-return (59)
-    on left: 38 39, on right: 33 34
-type_spec (60)
-    on left: 40 41 42 43 44 45 46 47, on right: 9 15 24 28
-decl_id (61)
-    on left: 48 49 50, on right: 12 13 14 18 19 20 21 24 29 30 58
-table_id (62)
-    on left: 51, on right: 50
-table_init (63)
-    on left: 52, on right: 14 21
-table_init_values (64)
-    on left: 53 54, on right: 52 53
-expr (65)
-    on left: 55 56 57 58, on right: 12 19 38 53 54
-bool (66)
-    on left: 59 60, on right: 57
+instr_list (65)
+    on left: 37 38 39, on right: 31 32 33 34 37
+instr (66)
+    on left: 40, on right: 37 38
+instr_func_call (67)
+    on left: 41, on right: 40
+empty (68)
+    on left: 42, on right: 39
+return (69)
+    on left: 43 44, on right: 33 34
+type_spec (70)
+    on left: 45 46 47 48 49 50 51 52, on right: 9 15 24 28
+decl_id (71)
+    on left: 53 54 55, on right: 12 13 14 18 19 20 21 24 29 30 75
+table_id (72)
+    on left: 56, on right: 55
+table_init (73)
+    on left: 57, on right: 14 21
+table_init_values (74)
+    on left: 58 59, on right: 57 58
+expr (75)
+    on left: 60 61 62 63 64 65 66 67 68 69 70 71, on right: 12 19 43
+    56 58 59 60 61 62 63 64 65 66 67 68 69 70 77 85 86
+term (76)
+    on left: 72 73 74 75 76 77 78 79 80, on right: 60 61 62 63 64 65
+    66 67 68 69 70 71 78 79 80
+bool (77)
+    on left: 81 82, on right: 74
+func_call (78)
+    on left: 83 84, on right: 41 76
+func_stm (79)
+    on left: 85 86, on right: 83 85
 
 
 State 0
@@ -241,10 +297,10 @@ State 1
    13                | . decl_id ASSIGN_OP STRING
    14                | . decl_id ASSIGN_OP table_init
    24 func: KW_CONST . decl_id ASSIGN_OP '(' func_param_list ')' ':' type_spec ARROW_OP '{' body '}'
-   48 decl_id: . IDENTIFIER
-   49        | . IDENTIFIER '[' ']'
-   50        | . table_id
-   51 table_id: . IDENTIFIER '[' POS_INT ']'
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
 
     KW_START    shift, and go to state 8
     IDENTIFIER  shift, and go to state 9
@@ -266,10 +322,10 @@ State 2
    19              | . decl_id ASSIGN_OP expr
    20              | . decl_id ASSIGN_OP STRING
    21              | . decl_id ASSIGN_OP table_init
-   48 decl_id: . IDENTIFIER
-   49        | . IDENTIFIER '[' ']'
-   50        | . table_id
-   51 table_id: . IDENTIFIER '[' POS_INT ']'
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
 
     IDENTIFIER  shift, and go to state 9
 
@@ -340,13 +396,13 @@ State 8
 
 State 9
 
-   48 decl_id: IDENTIFIER .  [ASSIGN_OP, ':', '}', ';', ',']
-   49        | IDENTIFIER . '[' ']'
-   51 table_id: IDENTIFIER . '[' POS_INT ']'
+   53 decl_id: IDENTIFIER .  [ASSIGN_OP, ':', ',']
+   54        | IDENTIFIER . '[' ']'
+   56 table_id: IDENTIFIER . '[' expr ']'
 
     '['  shift, and go to state 26
 
-    $default  reduce using rule 48 (decl_id)
+    $default  reduce using rule 53 (decl_id)
 
 
 State 10
@@ -384,9 +440,9 @@ State 13
 
 State 14
 
-   50 decl_id: table_id .
+   55 decl_id: table_id .
 
-    $default  reduce using rule 50 (decl_id)
+    $default  reduce using rule 55 (decl_id)
 
 
 State 15
@@ -442,10 +498,10 @@ State 20
    13                | . decl_id ASSIGN_OP STRING
    14                | . decl_id ASSIGN_OP table_init
    24 func: KW_CONST . decl_id ASSIGN_OP '(' func_param_list ')' ':' type_spec ARROW_OP '{' body '}'
-   48 decl_id: . IDENTIFIER
-   49        | . IDENTIFIER '[' ']'
-   50        | . table_id
-   51 table_id: . IDENTIFIER '[' POS_INT ']'
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
 
     KW_START    shift, and go to state 33
     IDENTIFIER  shift, and go to state 9
@@ -479,10 +535,10 @@ State 23
 
     2 program: func_list KW_CONST . KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}'
    24 func: KW_CONST . decl_id ASSIGN_OP '(' func_param_list ')' ':' type_spec ARROW_OP '{' body '}'
-   48 decl_id: . IDENTIFIER
-   49        | . IDENTIFIER '[' ']'
-   50        | . table_id
-   51 table_id: . IDENTIFIER '[' POS_INT ']'
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
 
     KW_START    shift, and go to state 35
     IDENTIFIER  shift, and go to state 9
@@ -507,32 +563,76 @@ State 25
 
 State 26
 
-   49 decl_id: IDENTIFIER '[' . ']'
-   51 table_id: IDENTIFIER '[' . POS_INT ']'
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   54        | IDENTIFIER '[' . ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   56         | IDENTIFIER '[' . expr ']'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    POS_INT  shift, and go to state 38
-    ']'      shift, and go to state 39
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+    ']'         shift, and go to state 47
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    expr       go to state 49
+    term       go to state 50
+    bool       go to state 51
+    func_call  go to state 52
 
 
 State 27
 
     9 const_decl_body: const_decl_list ':' . type_spec ';'
-   40 type_spec: . KW_INT
-   41          | . KW_REAL
-   42          | . KW_BOOL
-   43          | . KW_STRING
-   44          | . '[' ']' KW_INT
-   45          | . '[' ']' KW_REAL
-   46          | . '[' ']' KW_BOOL
-   47          | . '[' ']' KW_STRING
+   45 type_spec: . KW_INT
+   46          | . KW_REAL
+   47          | . KW_BOOL
+   48          | . KW_STRING
+   49          | . '[' ']' KW_INT
+   50          | . '[' ']' KW_REAL
+   51          | . '[' ']' KW_BOOL
+   52          | . '[' ']' KW_STRING
 
-    KW_INT     shift, and go to state 40
-    KW_REAL    shift, and go to state 41
-    KW_BOOL    shift, and go to state 42
-    KW_STRING  shift, and go to state 43
-    '['        shift, and go to state 44
+    KW_INT     shift, and go to state 53
+    KW_REAL    shift, and go to state 54
+    KW_BOOL    shift, and go to state 55
+    KW_STRING  shift, and go to state 56
+    '['        shift, and go to state 57
 
-    type_spec  go to state 45
+    type_spec  go to state 58
 
 
 State 28
@@ -541,15 +641,15 @@ State 28
    12 const_decl_init: . decl_id ASSIGN_OP expr
    13                | . decl_id ASSIGN_OP STRING
    14                | . decl_id ASSIGN_OP table_init
-   48 decl_id: . IDENTIFIER
-   49        | . IDENTIFIER '[' ']'
-   50        | . table_id
-   51 table_id: . IDENTIFIER '[' POS_INT ']'
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
 
     IDENTIFIER  shift, and go to state 9
 
-    const_decl_init  go to state 46
-    decl_id          go to state 47
+    const_decl_init  go to state 59
+    decl_id          go to state 60
     table_id         go to state 14
 
 
@@ -559,53 +659,77 @@ State 29
    13                | decl_id ASSIGN_OP . STRING
    14                | decl_id ASSIGN_OP . table_init
    24 func: KW_CONST decl_id ASSIGN_OP . '(' func_param_list ')' ':' type_spec ARROW_OP '{' body '}'
-   48 decl_id: . IDENTIFIER
-   49        | . IDENTIFIER '[' ']'
-   50        | . table_id
-   51 table_id: . IDENTIFIER '[' POS_INT ']'
-   52 table_init: . '{' table_init_values '}'
-   55 expr: . POS_INT
-   56     | . POS_REAL
-   57     | . bool
-   58     | . decl_id
-   59 bool: . KW_TRUE
-   60     | . KW_FALSE
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   57 table_init: . '{' table_init_values '}'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    POS_INT     shift, and go to state 48
-    POS_REAL    shift, and go to state 49
-    KW_TRUE     shift, and go to state 50
-    KW_FALSE    shift, and go to state 51
-    IDENTIFIER  shift, and go to state 9
-    STRING      shift, and go to state 52
-    '('         shift, and go to state 53
-    '{'         shift, and go to state 54
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    STRING      shift, and go to state 61
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 62
+    '{'         shift, and go to state 63
 
-    decl_id     go to state 55
+    decl_id     go to state 48
     table_id    go to state 14
-    table_init  go to state 56
-    expr        go to state 57
-    bool        go to state 58
+    table_init  go to state 64
+    expr        go to state 65
+    term        go to state 50
+    bool        go to state 51
+    func_call   go to state 52
 
 
 State 30
 
    15 let_decl_body: let_decl_list ':' . type_spec ';'
-   40 type_spec: . KW_INT
-   41          | . KW_REAL
-   42          | . KW_BOOL
-   43          | . KW_STRING
-   44          | . '[' ']' KW_INT
-   45          | . '[' ']' KW_REAL
-   46          | . '[' ']' KW_BOOL
-   47          | . '[' ']' KW_STRING
+   45 type_spec: . KW_INT
+   46          | . KW_REAL
+   47          | . KW_BOOL
+   48          | . KW_STRING
+   49          | . '[' ']' KW_INT
+   50          | . '[' ']' KW_REAL
+   51          | . '[' ']' KW_BOOL
+   52          | . '[' ']' KW_STRING
 
-    KW_INT     shift, and go to state 40
-    KW_REAL    shift, and go to state 41
-    KW_BOOL    shift, and go to state 42
-    KW_STRING  shift, and go to state 43
-    '['        shift, and go to state 44
+    KW_INT     shift, and go to state 53
+    KW_REAL    shift, and go to state 54
+    KW_BOOL    shift, and go to state 55
+    KW_STRING  shift, and go to state 56
+    '['        shift, and go to state 57
 
-    type_spec  go to state 59
+    type_spec  go to state 66
 
 
 State 31
@@ -615,14 +739,14 @@ State 31
    19              | . decl_id ASSIGN_OP expr
    20              | . decl_id ASSIGN_OP STRING
    21              | . decl_id ASSIGN_OP table_init
-   48 decl_id: . IDENTIFIER
-   49        | . IDENTIFIER '[' ']'
-   50        | . table_id
-   51 table_id: . IDENTIFIER '[' POS_INT ']'
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
 
     IDENTIFIER  shift, and go to state 9
 
-    let_decl_init  go to state 60
+    let_decl_init  go to state 67
     decl_id        go to state 18
     table_id       go to state 14
 
@@ -632,50 +756,75 @@ State 32
    19 let_decl_init: decl_id ASSIGN_OP . expr
    20              | decl_id ASSIGN_OP . STRING
    21              | decl_id ASSIGN_OP . table_init
-   48 decl_id: . IDENTIFIER
-   49        | . IDENTIFIER '[' ']'
-   50        | . table_id
-   51 table_id: . IDENTIFIER '[' POS_INT ']'
-   52 table_init: . '{' table_init_values '}'
-   55 expr: . POS_INT
-   56     | . POS_REAL
-   57     | . bool
-   58     | . decl_id
-   59 bool: . KW_TRUE
-   60     | . KW_FALSE
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   57 table_init: . '{' table_init_values '}'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    POS_INT     shift, and go to state 48
-    POS_REAL    shift, and go to state 49
-    KW_TRUE     shift, and go to state 50
-    KW_FALSE    shift, and go to state 51
-    IDENTIFIER  shift, and go to state 9
-    STRING      shift, and go to state 61
-    '{'         shift, and go to state 54
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    STRING      shift, and go to state 68
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+    '{'         shift, and go to state 63
 
-    decl_id     go to state 55
+    decl_id     go to state 48
     table_id    go to state 14
-    table_init  go to state 62
-    expr        go to state 63
-    bool        go to state 58
+    table_init  go to state 69
+    expr        go to state 70
+    term        go to state 50
+    bool        go to state 51
+    func_call   go to state 52
 
 
 State 33
 
     3 program: decl_list KW_CONST KW_START . ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}'
 
-    ASSIGN_OP  shift, and go to state 64
+    ASSIGN_OP  shift, and go to state 71
 
 
 State 34
 
     1 program: decl_list func_list KW_CONST . KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}'
    24 func: KW_CONST . decl_id ASSIGN_OP '(' func_param_list ')' ':' type_spec ARROW_OP '{' body '}'
-   48 decl_id: . IDENTIFIER
-   49        | . IDENTIFIER '[' ']'
-   50        | . table_id
-   51 table_id: . IDENTIFIER '[' POS_INT ']'
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
 
-    KW_START    shift, and go to state 65
+    KW_START    shift, and go to state 72
     IDENTIFIER  shift, and go to state 9
 
     decl_id   go to state 36
@@ -686,134 +835,364 @@ State 35
 
     2 program: func_list KW_CONST KW_START . ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}'
 
-    ASSIGN_OP  shift, and go to state 66
+    ASSIGN_OP  shift, and go to state 73
 
 
 State 36
 
    24 func: KW_CONST decl_id . ASSIGN_OP '(' func_param_list ')' ':' type_spec ARROW_OP '{' body '}'
 
-    ASSIGN_OP  shift, and go to state 67
+    ASSIGN_OP  shift, and go to state 74
 
 
 State 37
 
     4 program: KW_CONST KW_START ASSIGN_OP '(' . ')' ':' KW_INT ARROW_OP '{' body '}'
 
-    ')'  shift, and go to state 68
+    ')'  shift, and go to state 75
 
 
 State 38
 
-   51 table_id: IDENTIFIER '[' POS_INT . ']'
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   80     | NOT_OP . term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    ']'  shift, and go to state 69
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    term       go to state 76
+    bool       go to state 51
+    func_call  go to state 52
 
 
 State 39
 
-   49 decl_id: IDENTIFIER '[' ']' .
+   72 term: POS_INT .
 
-    $default  reduce using rule 49 (decl_id)
+    $default  reduce using rule 72 (term)
 
 
 State 40
 
-   40 type_spec: KW_INT .
+   73 term: POS_REAL .
 
-    $default  reduce using rule 40 (type_spec)
+    $default  reduce using rule 73 (term)
 
 
 State 41
 
-   41 type_spec: KW_REAL .
+   81 bool: KW_TRUE .
 
-    $default  reduce using rule 41 (type_spec)
+    $default  reduce using rule 81 (bool)
 
 
 State 42
 
-   42 type_spec: KW_BOOL .
+   82 bool: KW_FALSE .
 
-    $default  reduce using rule 42 (type_spec)
+    $default  reduce using rule 82 (bool)
 
 
 State 43
 
-   43 type_spec: KW_STRING .
+   53 decl_id: IDENTIFIER .  [DIFFERENT_OP, EQUAL_LESS_OP, AND_OP, OR_OP, '=', '<', '-', '+', '*', '/', '%', ')', ':', '}', ';', ',', ']']
+   54        | IDENTIFIER . '[' ']'
+   56 table_id: IDENTIFIER . '[' expr ']'
+   83 func_call: IDENTIFIER . '(' func_stm ')'
+   84          | IDENTIFIER . '(' ')'
 
-    $default  reduce using rule 43 (type_spec)
+    '('  shift, and go to state 77
+    '['  shift, and go to state 26
+
+    $default  reduce using rule 53 (decl_id)
 
 
 State 44
 
-   44 type_spec: '[' . ']' KW_INT
-   45          | '[' . ']' KW_REAL
-   46          | '[' . ']' KW_BOOL
-   47          | '[' . ']' KW_STRING
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   78     | '-' . term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    ']'  shift, and go to state 70
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    term       go to state 78
+    bool       go to state 51
+    func_call  go to state 52
 
 
 State 45
 
-    9 const_decl_body: const_decl_list ':' type_spec . ';'
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   79     | '+' . term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    ';'  shift, and go to state 71
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    term       go to state 79
+    bool       go to state 51
+    func_call  go to state 52
 
 
 State 46
+
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   77     | '(' . expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
+
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    expr       go to state 80
+    term       go to state 50
+    bool       go to state 51
+    func_call  go to state 52
+
+
+State 47
+
+   54 decl_id: IDENTIFIER '[' ']' .
+
+    $default  reduce using rule 54 (decl_id)
+
+
+State 48
+
+   75 term: decl_id .
+
+    $default  reduce using rule 75 (term)
+
+
+State 49
+
+   56 table_id: IDENTIFIER '[' expr . ']'
+
+    ']'  shift, and go to state 81
+
+
+State 50
+
+   60 expr: term . '+' expr
+   61     | term . '-' expr
+   62     | term . '*' expr
+   63     | term . '/' expr
+   64     | term . '%' expr
+   65     | term . '=' expr
+   66     | term . '<' expr
+   67     | term . EQUAL_LESS_OP expr
+   68     | term . DIFFERENT_OP expr
+   69     | term . AND_OP expr
+   70     | term . OR_OP expr
+   71     | term .  [')', ':', '}', ';', ',', ']']
+
+    DIFFERENT_OP   shift, and go to state 82
+    EQUAL_LESS_OP  shift, and go to state 83
+    AND_OP         shift, and go to state 84
+    OR_OP          shift, and go to state 85
+    '='            shift, and go to state 86
+    '<'            shift, and go to state 87
+    '-'            shift, and go to state 88
+    '+'            shift, and go to state 89
+    '*'            shift, and go to state 90
+    '/'            shift, and go to state 91
+    '%'            shift, and go to state 92
+
+    $default  reduce using rule 71 (expr)
+
+
+State 51
+
+   74 term: bool .
+
+    $default  reduce using rule 74 (term)
+
+
+State 52
+
+   76 term: func_call .
+
+    $default  reduce using rule 76 (term)
+
+
+State 53
+
+   45 type_spec: KW_INT .
+
+    $default  reduce using rule 45 (type_spec)
+
+
+State 54
+
+   46 type_spec: KW_REAL .
+
+    $default  reduce using rule 46 (type_spec)
+
+
+State 55
+
+   47 type_spec: KW_BOOL .
+
+    $default  reduce using rule 47 (type_spec)
+
+
+State 56
+
+   48 type_spec: KW_STRING .
+
+    $default  reduce using rule 48 (type_spec)
+
+
+State 57
+
+   49 type_spec: '[' . ']' KW_INT
+   50          | '[' . ']' KW_REAL
+   51          | '[' . ']' KW_BOOL
+   52          | '[' . ']' KW_STRING
+
+    ']'  shift, and go to state 93
+
+
+State 58
+
+    9 const_decl_body: const_decl_list ':' type_spec . ';'
+
+    ';'  shift, and go to state 94
+
+
+State 59
 
    10 const_decl_list: const_decl_list ',' const_decl_init .
 
     $default  reduce using rule 10 (const_decl_list)
 
 
-State 47
+State 60
 
    12 const_decl_init: decl_id . ASSIGN_OP expr
    13                | decl_id . ASSIGN_OP STRING
    14                | decl_id . ASSIGN_OP table_init
 
-    ASSIGN_OP  shift, and go to state 72
+    ASSIGN_OP  shift, and go to state 95
 
 
-State 48
-
-   55 expr: POS_INT .
-
-    $default  reduce using rule 55 (expr)
-
-
-State 49
-
-   56 expr: POS_REAL .
-
-    $default  reduce using rule 56 (expr)
-
-
-State 50
-
-   59 bool: KW_TRUE .
-
-    $default  reduce using rule 59 (bool)
-
-
-State 51
-
-   60 bool: KW_FALSE .
-
-    $default  reduce using rule 60 (bool)
-
-
-State 52
+State 61
 
    13 const_decl_init: decl_id ASSIGN_OP STRING .
 
     $default  reduce using rule 13 (const_decl_init)
 
 
-State 53
+State 62
 
    24 func: KW_CONST decl_id ASSIGN_OP '(' . func_param_list ')' ':' type_spec ARROW_OP '{' body '}'
    25 func_param_list: . %empty  [')', ',']
@@ -822,599 +1201,1563 @@ State 53
    28 func_param: . param_list ':' type_spec
    29 param_list: . param_list ',' decl_id
    30           | . decl_id
-   48 decl_id: . IDENTIFIER
-   49        | . IDENTIFIER '[' ']'
-   50        | . table_id
-   51 table_id: . IDENTIFIER '[' POS_INT ']'
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   77     | '(' . expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    IDENTIFIER  shift, and go to state 9
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
 
     $default  reduce using rule 25 (func_param_list)
 
-    func_param_list  go to state 73
-    func_param       go to state 74
-    param_list       go to state 75
-    decl_id          go to state 76
+    func_param_list  go to state 96
+    func_param       go to state 97
+    param_list       go to state 98
+    decl_id          go to state 99
     table_id         go to state 14
+    expr             go to state 80
+    term             go to state 50
+    bool             go to state 51
+    func_call        go to state 52
 
 
-State 54
+State 63
 
-   48 decl_id: . IDENTIFIER
-   49        | . IDENTIFIER '[' ']'
-   50        | . table_id
-   51 table_id: . IDENTIFIER '[' POS_INT ']'
-   52 table_init: '{' . table_init_values '}'
-   53 table_init_values: . table_init_values ',' expr
-   54                  | . expr
-   55 expr: . POS_INT
-   56     | . POS_REAL
-   57     | . bool
-   58     | . decl_id
-   59 bool: . KW_TRUE
-   60     | . KW_FALSE
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   57 table_init: '{' . table_init_values '}'
+   58 table_init_values: . table_init_values ',' expr
+   59                  | . expr
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    POS_INT     shift, and go to state 48
-    POS_REAL    shift, and go to state 49
-    KW_TRUE     shift, and go to state 50
-    KW_FALSE    shift, and go to state 51
-    IDENTIFIER  shift, and go to state 9
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
 
-    decl_id            go to state 55
+    decl_id            go to state 48
     table_id           go to state 14
-    table_init_values  go to state 77
-    expr               go to state 78
-    bool               go to state 58
+    table_init_values  go to state 100
+    expr               go to state 101
+    term               go to state 50
+    bool               go to state 51
+    func_call          go to state 52
 
 
-State 55
-
-   58 expr: decl_id .
-
-    $default  reduce using rule 58 (expr)
-
-
-State 56
+State 64
 
    14 const_decl_init: decl_id ASSIGN_OP table_init .
 
     $default  reduce using rule 14 (const_decl_init)
 
 
-State 57
+State 65
 
    12 const_decl_init: decl_id ASSIGN_OP expr .
 
     $default  reduce using rule 12 (const_decl_init)
 
 
-State 58
-
-   57 expr: bool .
-
-    $default  reduce using rule 57 (expr)
-
-
-State 59
+State 66
 
    15 let_decl_body: let_decl_list ':' type_spec . ';'
 
-    ';'  shift, and go to state 79
+    ';'  shift, and go to state 102
 
 
-State 60
+State 67
 
    16 let_decl_list: let_decl_list ',' let_decl_init .
 
     $default  reduce using rule 16 (let_decl_list)
 
 
-State 61
+State 68
 
    20 let_decl_init: decl_id ASSIGN_OP STRING .
 
     $default  reduce using rule 20 (let_decl_init)
 
 
-State 62
+State 69
 
    21 let_decl_init: decl_id ASSIGN_OP table_init .
 
     $default  reduce using rule 21 (let_decl_init)
 
 
-State 63
+State 70
 
    19 let_decl_init: decl_id ASSIGN_OP expr .
 
     $default  reduce using rule 19 (let_decl_init)
 
 
-State 64
+State 71
 
     3 program: decl_list KW_CONST KW_START ASSIGN_OP . '(' ')' ':' KW_INT ARROW_OP '{' body '}'
 
-    '('  shift, and go to state 80
+    '('  shift, and go to state 103
 
 
-State 65
+State 72
 
     1 program: decl_list func_list KW_CONST KW_START . ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}'
 
-    ASSIGN_OP  shift, and go to state 81
+    ASSIGN_OP  shift, and go to state 104
 
 
-State 66
+State 73
 
     2 program: func_list KW_CONST KW_START ASSIGN_OP . '(' ')' ':' KW_INT ARROW_OP '{' body '}'
 
-    '('  shift, and go to state 82
+    '('  shift, and go to state 105
 
 
-State 67
+State 74
 
    24 func: KW_CONST decl_id ASSIGN_OP . '(' func_param_list ')' ':' type_spec ARROW_OP '{' body '}'
 
-    '('  shift, and go to state 53
+    '('  shift, and go to state 106
 
 
-State 68
+State 75
 
     4 program: KW_CONST KW_START ASSIGN_OP '(' ')' . ':' KW_INT ARROW_OP '{' body '}'
 
-    ':'  shift, and go to state 83
+    ':'  shift, and go to state 107
 
 
-State 69
+State 76
 
-   51 table_id: IDENTIFIER '[' POS_INT ']' .
+   80 term: NOT_OP term .
 
-    $default  reduce using rule 51 (table_id)
-
-
-State 70
-
-   44 type_spec: '[' ']' . KW_INT
-   45          | '[' ']' . KW_REAL
-   46          | '[' ']' . KW_BOOL
-   47          | '[' ']' . KW_STRING
-
-    KW_INT     shift, and go to state 84
-    KW_REAL    shift, and go to state 85
-    KW_BOOL    shift, and go to state 86
-    KW_STRING  shift, and go to state 87
+    $default  reduce using rule 80 (term)
 
 
-State 71
+State 77
+
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   83          | IDENTIFIER '(' . func_stm ')'
+   84          | . IDENTIFIER '(' ')'
+   84          | IDENTIFIER '(' . ')'
+   85 func_stm: . func_stm ',' expr
+   86         | . expr
+
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+    ')'         shift, and go to state 108
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    expr       go to state 109
+    term       go to state 50
+    bool       go to state 51
+    func_call  go to state 52
+    func_stm   go to state 110
+
+
+State 78
+
+   78 term: '-' term .
+
+    $default  reduce using rule 78 (term)
+
+
+State 79
+
+   79 term: '+' term .
+
+    $default  reduce using rule 79 (term)
+
+
+State 80
+
+   77 term: '(' expr . ')'
+
+    ')'  shift, and go to state 111
+
+
+State 81
+
+   56 table_id: IDENTIFIER '[' expr ']' .
+
+    $default  reduce using rule 56 (table_id)
+
+
+State 82
+
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   68     | term DIFFERENT_OP . expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
+
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    expr       go to state 112
+    term       go to state 50
+    bool       go to state 51
+    func_call  go to state 52
+
+
+State 83
+
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   67     | term EQUAL_LESS_OP . expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
+
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    expr       go to state 113
+    term       go to state 50
+    bool       go to state 51
+    func_call  go to state 52
+
+
+State 84
+
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   69     | term AND_OP . expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
+
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    expr       go to state 114
+    term       go to state 50
+    bool       go to state 51
+    func_call  go to state 52
+
+
+State 85
+
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   70     | term OR_OP . expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
+
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    expr       go to state 115
+    term       go to state 50
+    bool       go to state 51
+    func_call  go to state 52
+
+
+State 86
+
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   65     | term '=' . expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
+
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    expr       go to state 116
+    term       go to state 50
+    bool       go to state 51
+    func_call  go to state 52
+
+
+State 87
+
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   66     | term '<' . expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
+
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    expr       go to state 117
+    term       go to state 50
+    bool       go to state 51
+    func_call  go to state 52
+
+
+State 88
+
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   61     | term '-' . expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
+
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    expr       go to state 118
+    term       go to state 50
+    bool       go to state 51
+    func_call  go to state 52
+
+
+State 89
+
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   60 expr: . term '+' expr
+   60     | term '+' . expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
+
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    expr       go to state 119
+    term       go to state 50
+    bool       go to state 51
+    func_call  go to state 52
+
+
+State 90
+
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   62     | term '*' . expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
+
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    expr       go to state 120
+    term       go to state 50
+    bool       go to state 51
+    func_call  go to state 52
+
+
+State 91
+
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   63     | term '/' . expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
+
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    expr       go to state 121
+    term       go to state 50
+    bool       go to state 51
+    func_call  go to state 52
+
+
+State 92
+
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   64     | term '%' . expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
+
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    expr       go to state 122
+    term       go to state 50
+    bool       go to state 51
+    func_call  go to state 52
+
+
+State 93
+
+   49 type_spec: '[' ']' . KW_INT
+   50          | '[' ']' . KW_REAL
+   51          | '[' ']' . KW_BOOL
+   52          | '[' ']' . KW_STRING
+
+    KW_INT     shift, and go to state 123
+    KW_REAL    shift, and go to state 124
+    KW_BOOL    shift, and go to state 125
+    KW_STRING  shift, and go to state 126
+
+
+State 94
 
     9 const_decl_body: const_decl_list ':' type_spec ';' .
 
     $default  reduce using rule 9 (const_decl_body)
 
 
-State 72
+State 95
 
    12 const_decl_init: decl_id ASSIGN_OP . expr
    13                | decl_id ASSIGN_OP . STRING
    14                | decl_id ASSIGN_OP . table_init
-   48 decl_id: . IDENTIFIER
-   49        | . IDENTIFIER '[' ']'
-   50        | . table_id
-   51 table_id: . IDENTIFIER '[' POS_INT ']'
-   52 table_init: . '{' table_init_values '}'
-   55 expr: . POS_INT
-   56     | . POS_REAL
-   57     | . bool
-   58     | . decl_id
-   59 bool: . KW_TRUE
-   60     | . KW_FALSE
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   57 table_init: . '{' table_init_values '}'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    POS_INT     shift, and go to state 48
-    POS_REAL    shift, and go to state 49
-    KW_TRUE     shift, and go to state 50
-    KW_FALSE    shift, and go to state 51
-    IDENTIFIER  shift, and go to state 9
-    STRING      shift, and go to state 52
-    '{'         shift, and go to state 54
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    STRING      shift, and go to state 61
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+    '{'         shift, and go to state 63
 
-    decl_id     go to state 55
+    decl_id     go to state 48
     table_id    go to state 14
-    table_init  go to state 56
-    expr        go to state 57
-    bool        go to state 58
+    table_init  go to state 64
+    expr        go to state 65
+    term        go to state 50
+    bool        go to state 51
+    func_call   go to state 52
 
 
-State 73
+State 96
 
    24 func: KW_CONST decl_id ASSIGN_OP '(' func_param_list . ')' ':' type_spec ARROW_OP '{' body '}'
    26 func_param_list: func_param_list . ',' func_param
 
-    ')'  shift, and go to state 88
-    ','  shift, and go to state 89
+    ')'  shift, and go to state 127
+    ','  shift, and go to state 128
 
 
-State 74
+State 97
 
    27 func_param_list: func_param .
 
     $default  reduce using rule 27 (func_param_list)
 
 
-State 75
+State 98
 
    28 func_param: param_list . ':' type_spec
    29 param_list: param_list . ',' decl_id
 
-    ':'  shift, and go to state 90
-    ','  shift, and go to state 91
+    ':'  shift, and go to state 129
+    ','  shift, and go to state 130
 
 
-State 76
+State 99
 
-   30 param_list: decl_id .
+   30 param_list: decl_id .  [':', ',']
+   75 term: decl_id .  [DIFFERENT_OP, EQUAL_LESS_OP, AND_OP, OR_OP, '=', '<', '-', '+', '*', '/', '%', ')']
 
-    $default  reduce using rule 30 (param_list)
-
-
-State 77
-
-   52 table_init: '{' table_init_values . '}'
-   53 table_init_values: table_init_values . ',' expr
-
-    '}'  shift, and go to state 92
-    ','  shift, and go to state 93
+    ':'       reduce using rule 30 (param_list)
+    ','       reduce using rule 30 (param_list)
+    $default  reduce using rule 75 (term)
 
 
-State 78
+State 100
 
-   54 table_init_values: expr .
+   57 table_init: '{' table_init_values . '}'
+   58 table_init_values: table_init_values . ',' expr
 
-    $default  reduce using rule 54 (table_init_values)
+    '}'  shift, and go to state 131
+    ','  shift, and go to state 132
 
 
-State 79
+State 101
+
+   59 table_init_values: expr .
+
+    $default  reduce using rule 59 (table_init_values)
+
+
+State 102
 
    15 let_decl_body: let_decl_list ':' type_spec ';' .
 
     $default  reduce using rule 15 (let_decl_body)
 
 
-State 80
+State 103
 
     3 program: decl_list KW_CONST KW_START ASSIGN_OP '(' . ')' ':' KW_INT ARROW_OP '{' body '}'
 
-    ')'  shift, and go to state 94
+    ')'  shift, and go to state 133
 
 
-State 81
+State 104
 
     1 program: decl_list func_list KW_CONST KW_START ASSIGN_OP . '(' ')' ':' KW_INT ARROW_OP '{' body '}'
 
-    '('  shift, and go to state 95
+    '('  shift, and go to state 134
 
 
-State 82
+State 105
 
     2 program: func_list KW_CONST KW_START ASSIGN_OP '(' . ')' ':' KW_INT ARROW_OP '{' body '}'
 
-    ')'  shift, and go to state 96
+    ')'  shift, and go to state 135
 
 
-State 83
+State 106
+
+   24 func: KW_CONST decl_id ASSIGN_OP '(' . func_param_list ')' ':' type_spec ARROW_OP '{' body '}'
+   25 func_param_list: . %empty  [')', ',']
+   26                | . func_param_list ',' func_param
+   27                | . func_param
+   28 func_param: . param_list ':' type_spec
+   29 param_list: . param_list ',' decl_id
+   30           | . decl_id
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+
+    IDENTIFIER  shift, and go to state 9
+
+    $default  reduce using rule 25 (func_param_list)
+
+    func_param_list  go to state 96
+    func_param       go to state 97
+    param_list       go to state 98
+    decl_id          go to state 136
+    table_id         go to state 14
+
+
+State 107
 
     4 program: KW_CONST KW_START ASSIGN_OP '(' ')' ':' . KW_INT ARROW_OP '{' body '}'
 
-    KW_INT  shift, and go to state 97
+    KW_INT  shift, and go to state 137
 
 
-State 84
+State 108
 
-   44 type_spec: '[' ']' KW_INT .
+   84 func_call: IDENTIFIER '(' ')' .
 
-    $default  reduce using rule 44 (type_spec)
-
-
-State 85
-
-   45 type_spec: '[' ']' KW_REAL .
-
-    $default  reduce using rule 45 (type_spec)
+    $default  reduce using rule 84 (func_call)
 
 
-State 86
+State 109
 
-   46 type_spec: '[' ']' KW_BOOL .
+   86 func_stm: expr .
 
-    $default  reduce using rule 46 (type_spec)
-
-
-State 87
-
-   47 type_spec: '[' ']' KW_STRING .
-
-    $default  reduce using rule 47 (type_spec)
+    $default  reduce using rule 86 (func_stm)
 
 
-State 88
+State 110
+
+   83 func_call: IDENTIFIER '(' func_stm . ')'
+   85 func_stm: func_stm . ',' expr
+
+    ')'  shift, and go to state 138
+    ','  shift, and go to state 139
+
+
+State 111
+
+   77 term: '(' expr ')' .
+
+    $default  reduce using rule 77 (term)
+
+
+State 112
+
+   68 expr: term DIFFERENT_OP expr .
+
+    $default  reduce using rule 68 (expr)
+
+
+State 113
+
+   67 expr: term EQUAL_LESS_OP expr .
+
+    $default  reduce using rule 67 (expr)
+
+
+State 114
+
+   69 expr: term AND_OP expr .
+
+    $default  reduce using rule 69 (expr)
+
+
+State 115
+
+   70 expr: term OR_OP expr .
+
+    $default  reduce using rule 70 (expr)
+
+
+State 116
+
+   65 expr: term '=' expr .
+
+    $default  reduce using rule 65 (expr)
+
+
+State 117
+
+   66 expr: term '<' expr .
+
+    $default  reduce using rule 66 (expr)
+
+
+State 118
+
+   61 expr: term '-' expr .
+
+    $default  reduce using rule 61 (expr)
+
+
+State 119
+
+   60 expr: term '+' expr .
+
+    $default  reduce using rule 60 (expr)
+
+
+State 120
+
+   62 expr: term '*' expr .
+
+    $default  reduce using rule 62 (expr)
+
+
+State 121
+
+   63 expr: term '/' expr .
+
+    $default  reduce using rule 63 (expr)
+
+
+State 122
+
+   64 expr: term '%' expr .
+
+    $default  reduce using rule 64 (expr)
+
+
+State 123
+
+   49 type_spec: '[' ']' KW_INT .
+
+    $default  reduce using rule 49 (type_spec)
+
+
+State 124
+
+   50 type_spec: '[' ']' KW_REAL .
+
+    $default  reduce using rule 50 (type_spec)
+
+
+State 125
+
+   51 type_spec: '[' ']' KW_BOOL .
+
+    $default  reduce using rule 51 (type_spec)
+
+
+State 126
+
+   52 type_spec: '[' ']' KW_STRING .
+
+    $default  reduce using rule 52 (type_spec)
+
+
+State 127
 
    24 func: KW_CONST decl_id ASSIGN_OP '(' func_param_list ')' . ':' type_spec ARROW_OP '{' body '}'
 
-    ':'  shift, and go to state 98
+    ':'  shift, and go to state 140
 
 
-State 89
+State 128
 
    26 func_param_list: func_param_list ',' . func_param
    28 func_param: . param_list ':' type_spec
    29 param_list: . param_list ',' decl_id
    30           | . decl_id
-   48 decl_id: . IDENTIFIER
-   49        | . IDENTIFIER '[' ']'
-   50        | . table_id
-   51 table_id: . IDENTIFIER '[' POS_INT ']'
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
 
     IDENTIFIER  shift, and go to state 9
 
-    func_param  go to state 99
-    param_list  go to state 75
-    decl_id     go to state 76
+    func_param  go to state 141
+    param_list  go to state 98
+    decl_id     go to state 136
     table_id    go to state 14
 
 
-State 90
+State 129
 
    28 func_param: param_list ':' . type_spec
-   40 type_spec: . KW_INT
-   41          | . KW_REAL
-   42          | . KW_BOOL
-   43          | . KW_STRING
-   44          | . '[' ']' KW_INT
-   45          | . '[' ']' KW_REAL
-   46          | . '[' ']' KW_BOOL
-   47          | . '[' ']' KW_STRING
+   45 type_spec: . KW_INT
+   46          | . KW_REAL
+   47          | . KW_BOOL
+   48          | . KW_STRING
+   49          | . '[' ']' KW_INT
+   50          | . '[' ']' KW_REAL
+   51          | . '[' ']' KW_BOOL
+   52          | . '[' ']' KW_STRING
 
-    KW_INT     shift, and go to state 40
-    KW_REAL    shift, and go to state 41
-    KW_BOOL    shift, and go to state 42
-    KW_STRING  shift, and go to state 43
-    '['        shift, and go to state 44
+    KW_INT     shift, and go to state 53
+    KW_REAL    shift, and go to state 54
+    KW_BOOL    shift, and go to state 55
+    KW_STRING  shift, and go to state 56
+    '['        shift, and go to state 57
 
-    type_spec  go to state 100
+    type_spec  go to state 142
 
 
-State 91
+State 130
 
    29 param_list: param_list ',' . decl_id
-   48 decl_id: . IDENTIFIER
-   49        | . IDENTIFIER '[' ']'
-   50        | . table_id
-   51 table_id: . IDENTIFIER '[' POS_INT ']'
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
 
     IDENTIFIER  shift, and go to state 9
 
-    decl_id   go to state 101
+    decl_id   go to state 143
     table_id  go to state 14
 
 
-State 92
+State 131
 
-   52 table_init: '{' table_init_values '}' .
+   57 table_init: '{' table_init_values '}' .
 
-    $default  reduce using rule 52 (table_init)
-
-
-State 93
-
-   48 decl_id: . IDENTIFIER
-   49        | . IDENTIFIER '[' ']'
-   50        | . table_id
-   51 table_id: . IDENTIFIER '[' POS_INT ']'
-   53 table_init_values: table_init_values ',' . expr
-   55 expr: . POS_INT
-   56     | . POS_REAL
-   57     | . bool
-   58     | . decl_id
-   59 bool: . KW_TRUE
-   60     | . KW_FALSE
-
-    POS_INT     shift, and go to state 48
-    POS_REAL    shift, and go to state 49
-    KW_TRUE     shift, and go to state 50
-    KW_FALSE    shift, and go to state 51
-    IDENTIFIER  shift, and go to state 9
-
-    decl_id   go to state 55
-    table_id  go to state 14
-    expr      go to state 102
-    bool      go to state 58
+    $default  reduce using rule 57 (table_init)
 
 
-State 94
+State 132
+
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   58 table_init_values: table_init_values ',' . expr
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
+
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    expr       go to state 144
+    term       go to state 50
+    bool       go to state 51
+    func_call  go to state 52
+
+
+State 133
 
     3 program: decl_list KW_CONST KW_START ASSIGN_OP '(' ')' . ':' KW_INT ARROW_OP '{' body '}'
 
-    ':'  shift, and go to state 103
+    ':'  shift, and go to state 145
 
 
-State 95
+State 134
 
     1 program: decl_list func_list KW_CONST KW_START ASSIGN_OP '(' . ')' ':' KW_INT ARROW_OP '{' body '}'
 
-    ')'  shift, and go to state 104
+    ')'  shift, and go to state 146
 
 
-State 96
+State 135
 
     2 program: func_list KW_CONST KW_START ASSIGN_OP '(' ')' . ':' KW_INT ARROW_OP '{' body '}'
 
-    ':'  shift, and go to state 105
+    ':'  shift, and go to state 147
 
 
-State 97
+State 136
+
+   30 param_list: decl_id .
+
+    $default  reduce using rule 30 (param_list)
+
+
+State 137
 
     4 program: KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT . ARROW_OP '{' body '}'
 
-    ARROW_OP  shift, and go to state 106
+    ARROW_OP  shift, and go to state 148
 
 
-State 98
+State 138
+
+   83 func_call: IDENTIFIER '(' func_stm ')' .
+
+    $default  reduce using rule 83 (func_call)
+
+
+State 139
+
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
+   85 func_stm: func_stm ',' . expr
+
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+
+    decl_id    go to state 48
+    table_id   go to state 14
+    expr       go to state 149
+    term       go to state 50
+    bool       go to state 51
+    func_call  go to state 52
+
+
+State 140
 
    24 func: KW_CONST decl_id ASSIGN_OP '(' func_param_list ')' ':' . type_spec ARROW_OP '{' body '}'
-   40 type_spec: . KW_INT
-   41          | . KW_REAL
-   42          | . KW_BOOL
-   43          | . KW_STRING
-   44          | . '[' ']' KW_INT
-   45          | . '[' ']' KW_REAL
-   46          | . '[' ']' KW_BOOL
-   47          | . '[' ']' KW_STRING
+   45 type_spec: . KW_INT
+   46          | . KW_REAL
+   47          | . KW_BOOL
+   48          | . KW_STRING
+   49          | . '[' ']' KW_INT
+   50          | . '[' ']' KW_REAL
+   51          | . '[' ']' KW_BOOL
+   52          | . '[' ']' KW_STRING
 
-    KW_INT     shift, and go to state 40
-    KW_REAL    shift, and go to state 41
-    KW_BOOL    shift, and go to state 42
-    KW_STRING  shift, and go to state 43
-    '['        shift, and go to state 44
+    KW_INT     shift, and go to state 53
+    KW_REAL    shift, and go to state 54
+    KW_BOOL    shift, and go to state 55
+    KW_STRING  shift, and go to state 56
+    '['        shift, and go to state 57
 
-    type_spec  go to state 107
+    type_spec  go to state 150
 
 
-State 99
+State 141
 
    26 func_param_list: func_param_list ',' func_param .
 
     $default  reduce using rule 26 (func_param_list)
 
 
-State 100
+State 142
 
    28 func_param: param_list ':' type_spec .
 
     $default  reduce using rule 28 (func_param)
 
 
-State 101
+State 143
 
    29 param_list: param_list ',' decl_id .
 
     $default  reduce using rule 29 (param_list)
 
 
-State 102
+State 144
 
-   53 table_init_values: table_init_values ',' expr .
+   58 table_init_values: table_init_values ',' expr .
 
-    $default  reduce using rule 53 (table_init_values)
+    $default  reduce using rule 58 (table_init_values)
 
 
-State 103
+State 145
 
     3 program: decl_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' . KW_INT ARROW_OP '{' body '}'
 
-    KW_INT  shift, and go to state 108
+    KW_INT  shift, and go to state 151
 
 
-State 104
+State 146
 
     1 program: decl_list func_list KW_CONST KW_START ASSIGN_OP '(' ')' . ':' KW_INT ARROW_OP '{' body '}'
 
-    ':'  shift, and go to state 109
+    ':'  shift, and go to state 152
 
 
-State 105
+State 147
 
     2 program: func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' . KW_INT ARROW_OP '{' body '}'
 
-    KW_INT  shift, and go to state 110
+    KW_INT  shift, and go to state 153
 
 
-State 106
+State 148
 
     4 program: KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP . '{' body '}'
 
-    '{'  shift, and go to state 111
+    '{'  shift, and go to state 154
 
 
-State 107
+State 149
+
+   85 func_stm: func_stm ',' expr .
+
+    $default  reduce using rule 85 (func_stm)
+
+
+State 150
 
    24 func: KW_CONST decl_id ASSIGN_OP '(' func_param_list ')' ':' type_spec . ARROW_OP '{' body '}'
 
-    ARROW_OP  shift, and go to state 112
+    ARROW_OP  shift, and go to state 155
 
 
-State 108
+State 151
 
     3 program: decl_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT . ARROW_OP '{' body '}'
 
-    ARROW_OP  shift, and go to state 113
+    ARROW_OP  shift, and go to state 156
 
 
-State 109
+State 152
 
     1 program: decl_list func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' . KW_INT ARROW_OP '{' body '}'
 
-    KW_INT  shift, and go to state 114
+    KW_INT  shift, and go to state 157
 
 
-State 110
+State 153
 
     2 program: func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT . ARROW_OP '{' body '}'
 
-    ARROW_OP  shift, and go to state 115
+    ARROW_OP  shift, and go to state 158
 
 
-State 111
+State 154
 
     4 program: KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' . body '}'
     7 decl: . KW_CONST const_decl_body
     8     | . KW_LET let_decl_body
-   31 body: . commands
-   32     | . body_decl_list commands
-   33     | . commands return
-   34     | . body_decl_list commands return
+   31 body: . instr_list
+   32     | . body_decl_list instr_list
+   33     | . instr_list return
+   34     | . body_decl_list instr_list return
    35 body_decl_list: . body_decl_list decl
    36               | . decl
-   37 commands: . %empty  [KW_RETURN, '}']
+   37 instr_list: . instr_list instr
+   38           | . instr
+   39           | . empty
+   40 instr: . instr_func_call
+   41 instr_func_call: . func_call ';'
+   42 empty: . %empty  [KW_RETURN, IDENTIFIER, '}']
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    KW_CONST  shift, and go to state 116
-    KW_LET    shift, and go to state 2
+    KW_CONST    shift, and go to state 159
+    KW_LET      shift, and go to state 2
+    IDENTIFIER  shift, and go to state 160
 
-    $default  reduce using rule 37 (commands)
+    IDENTIFIER  [reduce using rule 42 (empty)]
+    $default    reduce using rule 42 (empty)
 
-    decl            go to state 117
-    body            go to state 118
-    body_decl_list  go to state 119
-    commands        go to state 120
+    decl             go to state 161
+    body             go to state 162
+    body_decl_list   go to state 163
+    instr_list       go to state 164
+    instr            go to state 165
+    instr_func_call  go to state 166
+    empty            go to state 167
+    func_call        go to state 168
 
 
-State 112
+State 155
 
    24 func: KW_CONST decl_id ASSIGN_OP '(' func_param_list ')' ':' type_spec ARROW_OP . '{' body '}'
 
-    '{'  shift, and go to state 121
+    '{'  shift, and go to state 169
 
 
-State 113
+State 156
 
     3 program: decl_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP . '{' body '}'
 
-    '{'  shift, and go to state 122
+    '{'  shift, and go to state 170
 
 
-State 114
+State 157
 
     1 program: decl_list func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT . ARROW_OP '{' body '}'
 
-    ARROW_OP  shift, and go to state 123
+    ARROW_OP  shift, and go to state 171
 
 
-State 115
+State 158
 
     2 program: func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP . '{' body '}'
 
-    '{'  shift, and go to state 124
+    '{'  shift, and go to state 172
 
 
-State 116
+State 159
 
     7 decl: KW_CONST . const_decl_body
     9 const_decl_body: . const_decl_list ':' type_spec ';'
@@ -1423,310 +2766,468 @@ State 116
    12 const_decl_init: . decl_id ASSIGN_OP expr
    13                | . decl_id ASSIGN_OP STRING
    14                | . decl_id ASSIGN_OP table_init
-   48 decl_id: . IDENTIFIER
-   49        | . IDENTIFIER '[' ']'
-   50        | . table_id
-   51 table_id: . IDENTIFIER '[' POS_INT ']'
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
 
     IDENTIFIER  shift, and go to state 9
 
     const_decl_body  go to state 10
     const_decl_list  go to state 11
     const_decl_init  go to state 12
-    decl_id          go to state 47
+    decl_id          go to state 60
     table_id         go to state 14
 
 
-State 117
+State 160
+
+   83 func_call: IDENTIFIER . '(' func_stm ')'
+   84          | IDENTIFIER . '(' ')'
+
+    '('  shift, and go to state 77
+
+
+State 161
 
    36 body_decl_list: decl .
 
     $default  reduce using rule 36 (body_decl_list)
 
 
-State 118
+State 162
 
     4 program: KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body . '}'
 
-    '}'  shift, and go to state 125
+    '}'  shift, and go to state 173
 
 
-State 119
+State 163
 
     7 decl: . KW_CONST const_decl_body
     8     | . KW_LET let_decl_body
-   32 body: body_decl_list . commands
-   34     | body_decl_list . commands return
+   32 body: body_decl_list . instr_list
+   34     | body_decl_list . instr_list return
    35 body_decl_list: body_decl_list . decl
-   37 commands: . %empty  [KW_RETURN, '}']
+   37 instr_list: . instr_list instr
+   38           | . instr
+   39           | . empty
+   40 instr: . instr_func_call
+   41 instr_func_call: . func_call ';'
+   42 empty: . %empty  [KW_RETURN, IDENTIFIER, '}']
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    KW_CONST  shift, and go to state 116
-    KW_LET    shift, and go to state 2
+    KW_CONST    shift, and go to state 159
+    KW_LET      shift, and go to state 2
+    IDENTIFIER  shift, and go to state 160
 
-    $default  reduce using rule 37 (commands)
+    IDENTIFIER  [reduce using rule 42 (empty)]
+    $default    reduce using rule 42 (empty)
 
-    decl      go to state 126
-    commands  go to state 127
+    decl             go to state 174
+    instr_list       go to state 175
+    instr            go to state 165
+    instr_func_call  go to state 166
+    empty            go to state 167
+    func_call        go to state 168
 
 
-State 120
+State 164
 
-   31 body: commands .  ['}']
-   33     | commands . return
-   38 return: . KW_RETURN expr ';'
-   39       | . KW_RETURN ';'
+   31 body: instr_list .  ['}']
+   33     | instr_list . return
+   37 instr_list: instr_list . instr
+   40 instr: . instr_func_call
+   41 instr_func_call: . func_call ';'
+   43 return: . KW_RETURN expr ';'
+   44       | . KW_RETURN ';'
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    KW_RETURN  shift, and go to state 128
+    KW_RETURN   shift, and go to state 176
+    IDENTIFIER  shift, and go to state 160
 
     $default  reduce using rule 31 (body)
 
-    return  go to state 129
+    instr            go to state 177
+    instr_func_call  go to state 166
+    return           go to state 178
+    func_call        go to state 168
 
 
-State 121
+State 165
+
+   38 instr_list: instr .
+
+    $default  reduce using rule 38 (instr_list)
+
+
+State 166
+
+   40 instr: instr_func_call .
+
+    $default  reduce using rule 40 (instr)
+
+
+State 167
+
+   39 instr_list: empty .
+
+    $default  reduce using rule 39 (instr_list)
+
+
+State 168
+
+   41 instr_func_call: func_call . ';'
+
+    ';'  shift, and go to state 179
+
+
+State 169
 
     7 decl: . KW_CONST const_decl_body
     8     | . KW_LET let_decl_body
    24 func: KW_CONST decl_id ASSIGN_OP '(' func_param_list ')' ':' type_spec ARROW_OP '{' . body '}'
-   31 body: . commands
-   32     | . body_decl_list commands
-   33     | . commands return
-   34     | . body_decl_list commands return
+   31 body: . instr_list
+   32     | . body_decl_list instr_list
+   33     | . instr_list return
+   34     | . body_decl_list instr_list return
    35 body_decl_list: . body_decl_list decl
    36               | . decl
-   37 commands: . %empty  [KW_RETURN, '}']
+   37 instr_list: . instr_list instr
+   38           | . instr
+   39           | . empty
+   40 instr: . instr_func_call
+   41 instr_func_call: . func_call ';'
+   42 empty: . %empty  [KW_RETURN, IDENTIFIER, '}']
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    KW_CONST  shift, and go to state 116
-    KW_LET    shift, and go to state 2
+    KW_CONST    shift, and go to state 159
+    KW_LET      shift, and go to state 2
+    IDENTIFIER  shift, and go to state 160
 
-    $default  reduce using rule 37 (commands)
+    IDENTIFIER  [reduce using rule 42 (empty)]
+    $default    reduce using rule 42 (empty)
 
-    decl            go to state 117
-    body            go to state 130
-    body_decl_list  go to state 119
-    commands        go to state 120
+    decl             go to state 161
+    body             go to state 180
+    body_decl_list   go to state 163
+    instr_list       go to state 164
+    instr            go to state 165
+    instr_func_call  go to state 166
+    empty            go to state 167
+    func_call        go to state 168
 
 
-State 122
+State 170
 
     3 program: decl_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' . body '}'
     7 decl: . KW_CONST const_decl_body
     8     | . KW_LET let_decl_body
-   31 body: . commands
-   32     | . body_decl_list commands
-   33     | . commands return
-   34     | . body_decl_list commands return
+   31 body: . instr_list
+   32     | . body_decl_list instr_list
+   33     | . instr_list return
+   34     | . body_decl_list instr_list return
    35 body_decl_list: . body_decl_list decl
    36               | . decl
-   37 commands: . %empty  [KW_RETURN, '}']
+   37 instr_list: . instr_list instr
+   38           | . instr
+   39           | . empty
+   40 instr: . instr_func_call
+   41 instr_func_call: . func_call ';'
+   42 empty: . %empty  [KW_RETURN, IDENTIFIER, '}']
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    KW_CONST  shift, and go to state 116
-    KW_LET    shift, and go to state 2
+    KW_CONST    shift, and go to state 159
+    KW_LET      shift, and go to state 2
+    IDENTIFIER  shift, and go to state 160
 
-    $default  reduce using rule 37 (commands)
+    IDENTIFIER  [reduce using rule 42 (empty)]
+    $default    reduce using rule 42 (empty)
 
-    decl            go to state 117
-    body            go to state 131
-    body_decl_list  go to state 119
-    commands        go to state 120
+    decl             go to state 161
+    body             go to state 181
+    body_decl_list   go to state 163
+    instr_list       go to state 164
+    instr            go to state 165
+    instr_func_call  go to state 166
+    empty            go to state 167
+    func_call        go to state 168
 
 
-State 123
+State 171
 
     1 program: decl_list func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP . '{' body '}'
 
-    '{'  shift, and go to state 132
+    '{'  shift, and go to state 182
 
 
-State 124
+State 172
 
     2 program: func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' . body '}'
     7 decl: . KW_CONST const_decl_body
     8     | . KW_LET let_decl_body
-   31 body: . commands
-   32     | . body_decl_list commands
-   33     | . commands return
-   34     | . body_decl_list commands return
+   31 body: . instr_list
+   32     | . body_decl_list instr_list
+   33     | . instr_list return
+   34     | . body_decl_list instr_list return
    35 body_decl_list: . body_decl_list decl
    36               | . decl
-   37 commands: . %empty  [KW_RETURN, '}']
+   37 instr_list: . instr_list instr
+   38           | . instr
+   39           | . empty
+   40 instr: . instr_func_call
+   41 instr_func_call: . func_call ';'
+   42 empty: . %empty  [KW_RETURN, IDENTIFIER, '}']
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    KW_CONST  shift, and go to state 116
-    KW_LET    shift, and go to state 2
+    KW_CONST    shift, and go to state 159
+    KW_LET      shift, and go to state 2
+    IDENTIFIER  shift, and go to state 160
 
-    $default  reduce using rule 37 (commands)
+    IDENTIFIER  [reduce using rule 42 (empty)]
+    $default    reduce using rule 42 (empty)
 
-    decl            go to state 117
-    body            go to state 133
-    body_decl_list  go to state 119
-    commands        go to state 120
+    decl             go to state 161
+    body             go to state 183
+    body_decl_list   go to state 163
+    instr_list       go to state 164
+    instr            go to state 165
+    instr_func_call  go to state 166
+    empty            go to state 167
+    func_call        go to state 168
 
 
-State 125
+State 173
 
     4 program: KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}' .
 
     $default  reduce using rule 4 (program)
 
 
-State 126
+State 174
 
    35 body_decl_list: body_decl_list decl .
 
     $default  reduce using rule 35 (body_decl_list)
 
 
-State 127
+State 175
 
-   32 body: body_decl_list commands .  ['}']
-   34     | body_decl_list commands . return
-   38 return: . KW_RETURN expr ';'
-   39       | . KW_RETURN ';'
+   32 body: body_decl_list instr_list .  ['}']
+   34     | body_decl_list instr_list . return
+   37 instr_list: instr_list . instr
+   40 instr: . instr_func_call
+   41 instr_func_call: . func_call ';'
+   43 return: . KW_RETURN expr ';'
+   44       | . KW_RETURN ';'
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    KW_RETURN  shift, and go to state 128
+    KW_RETURN   shift, and go to state 176
+    IDENTIFIER  shift, and go to state 160
 
     $default  reduce using rule 32 (body)
 
-    return  go to state 134
+    instr            go to state 177
+    instr_func_call  go to state 166
+    return           go to state 184
+    func_call        go to state 168
 
 
-State 128
+State 176
 
-   38 return: KW_RETURN . expr ';'
-   39       | KW_RETURN . ';'
-   48 decl_id: . IDENTIFIER
-   49        | . IDENTIFIER '[' ']'
-   50        | . table_id
-   51 table_id: . IDENTIFIER '[' POS_INT ']'
-   55 expr: . POS_INT
-   56     | . POS_REAL
-   57     | . bool
-   58     | . decl_id
-   59 bool: . KW_TRUE
-   60     | . KW_FALSE
+   43 return: KW_RETURN . expr ';'
+   44       | KW_RETURN . ';'
+   53 decl_id: . IDENTIFIER
+   54        | . IDENTIFIER '[' ']'
+   55        | . table_id
+   56 table_id: . IDENTIFIER '[' expr ']'
+   60 expr: . term '+' expr
+   61     | . term '-' expr
+   62     | . term '*' expr
+   63     | . term '/' expr
+   64     | . term '%' expr
+   65     | . term '=' expr
+   66     | . term '<' expr
+   67     | . term EQUAL_LESS_OP expr
+   68     | . term DIFFERENT_OP expr
+   69     | . term AND_OP expr
+   70     | . term OR_OP expr
+   71     | . term
+   72 term: . POS_INT
+   73     | . POS_REAL
+   74     | . bool
+   75     | . decl_id
+   76     | . func_call
+   77     | . '(' expr ')'
+   78     | . '-' term
+   79     | . '+' term
+   80     | . NOT_OP term
+   81 bool: . KW_TRUE
+   82     | . KW_FALSE
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    POS_INT     shift, and go to state 48
-    POS_REAL    shift, and go to state 49
-    KW_TRUE     shift, and go to state 50
-    KW_FALSE    shift, and go to state 51
-    IDENTIFIER  shift, and go to state 9
-    ';'         shift, and go to state 135
+    NOT_OP      shift, and go to state 38
+    POS_INT     shift, and go to state 39
+    POS_REAL    shift, and go to state 40
+    KW_TRUE     shift, and go to state 41
+    KW_FALSE    shift, and go to state 42
+    IDENTIFIER  shift, and go to state 43
+    '-'         shift, and go to state 44
+    '+'         shift, and go to state 45
+    '('         shift, and go to state 46
+    ';'         shift, and go to state 185
 
-    decl_id   go to state 55
-    table_id  go to state 14
-    expr      go to state 136
-    bool      go to state 58
+    decl_id    go to state 48
+    table_id   go to state 14
+    expr       go to state 186
+    term       go to state 50
+    bool       go to state 51
+    func_call  go to state 52
 
 
-State 129
+State 177
 
-   33 body: commands return .
+   37 instr_list: instr_list instr .
+
+    $default  reduce using rule 37 (instr_list)
+
+
+State 178
+
+   33 body: instr_list return .
 
     $default  reduce using rule 33 (body)
 
 
-State 130
+State 179
+
+   41 instr_func_call: func_call ';' .
+
+    $default  reduce using rule 41 (instr_func_call)
+
+
+State 180
 
    24 func: KW_CONST decl_id ASSIGN_OP '(' func_param_list ')' ':' type_spec ARROW_OP '{' body . '}'
 
-    '}'  shift, and go to state 137
+    '}'  shift, and go to state 187
 
 
-State 131
+State 181
 
     3 program: decl_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body . '}'
 
-    '}'  shift, and go to state 138
+    '}'  shift, and go to state 188
 
 
-State 132
+State 182
 
     1 program: decl_list func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' . body '}'
     7 decl: . KW_CONST const_decl_body
     8     | . KW_LET let_decl_body
-   31 body: . commands
-   32     | . body_decl_list commands
-   33     | . commands return
-   34     | . body_decl_list commands return
+   31 body: . instr_list
+   32     | . body_decl_list instr_list
+   33     | . instr_list return
+   34     | . body_decl_list instr_list return
    35 body_decl_list: . body_decl_list decl
    36               | . decl
-   37 commands: . %empty  [KW_RETURN, '}']
+   37 instr_list: . instr_list instr
+   38           | . instr
+   39           | . empty
+   40 instr: . instr_func_call
+   41 instr_func_call: . func_call ';'
+   42 empty: . %empty  [KW_RETURN, IDENTIFIER, '}']
+   83 func_call: . IDENTIFIER '(' func_stm ')'
+   84          | . IDENTIFIER '(' ')'
 
-    KW_CONST  shift, and go to state 116
-    KW_LET    shift, and go to state 2
+    KW_CONST    shift, and go to state 159
+    KW_LET      shift, and go to state 2
+    IDENTIFIER  shift, and go to state 160
 
-    $default  reduce using rule 37 (commands)
+    IDENTIFIER  [reduce using rule 42 (empty)]
+    $default    reduce using rule 42 (empty)
 
-    decl            go to state 117
-    body            go to state 139
-    body_decl_list  go to state 119
-    commands        go to state 120
+    decl             go to state 161
+    body             go to state 189
+    body_decl_list   go to state 163
+    instr_list       go to state 164
+    instr            go to state 165
+    instr_func_call  go to state 166
+    empty            go to state 167
+    func_call        go to state 168
 
 
-State 133
+State 183
 
     2 program: func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body . '}'
 
-    '}'  shift, and go to state 140
+    '}'  shift, and go to state 190
 
 
-State 134
+State 184
 
-   34 body: body_decl_list commands return .
+   34 body: body_decl_list instr_list return .
 
     $default  reduce using rule 34 (body)
 
 
-State 135
+State 185
 
-   39 return: KW_RETURN ';' .
+   44 return: KW_RETURN ';' .
 
-    $default  reduce using rule 39 (return)
-
-
-State 136
-
-   38 return: KW_RETURN expr . ';'
-
-    ';'  shift, and go to state 141
+    $default  reduce using rule 44 (return)
 
 
-State 137
+State 186
+
+   43 return: KW_RETURN expr . ';'
+
+    ';'  shift, and go to state 191
+
+
+State 187
 
    24 func: KW_CONST decl_id ASSIGN_OP '(' func_param_list ')' ':' type_spec ARROW_OP '{' body '}' .
 
     $default  reduce using rule 24 (func)
 
 
-State 138
+State 188
 
     3 program: decl_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}' .
 
     $default  reduce using rule 3 (program)
 
 
-State 139
+State 189
 
     1 program: decl_list func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body . '}'
 
-    '}'  shift, and go to state 142
+    '}'  shift, and go to state 192
 
 
-State 140
+State 190
 
     2 program: func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}' .
 
     $default  reduce using rule 2 (program)
 
 
-State 141
+State 191
 
-   38 return: KW_RETURN expr ';' .
+   43 return: KW_RETURN expr ';' .
 
-    $default  reduce using rule 38 (return)
+    $default  reduce using rule 43 (return)
 
 
-State 142
+State 192
 
     1 program: decl_list func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}' .
 

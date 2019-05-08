@@ -32,24 +32,29 @@ const f1 <- (x:real):real => {
 	return x; 
 }
 const f2 <- (s[]: string): int =>{ return; }
-const f3 <- (x:real):[]real => {}
-const f4 <- (x:real, y : int, s[]: string):[]bool => {}
-const f5 <- ():bool => {}
-const f6 <- (r1, r2:real, s[]: string):real => {}
+const f3 <- (x:real):[]real => { return; }
+const f4 <- (x:real, y : int, s[]: string):[]bool => { return; }
+const f5 <- ():bool => { return; }
+const f6 <- (r1, r2:real, s[]: string):real => { return readInt(); }
 const f7 <- (i1, i2, int3, iefcescv:int, s1[],s2: string):real => {
 
 
-	let l1 <- -a : int;						-- αντίθετος της μεταβλητής a
-	let l1 <- a + b * (b / a) : int;		-- αριθμητική έκφραση
-	let l1 <- 4 + 50.0*x / 2.45 : int;		-- αριθμητική έκφραση
-	let l1 <- (a+1) % cube(b+3) : int;		-- αριθμητική έκφραση με κλήση συνάρτησης
-	let l1 <- (a <= b) and (d <= c) : int;	-- τελεστές λογικοί με σχεσιακούς
-	let l1 <- (c+a) != (2*d) : int;			-- τελεστές αριθμητικοί με σχεσιακούς
-	let l1 <- a + b[(k+1)*2] : int;			-- αριθμητική έκφραση με πίνακα
+	let l1 <- -a : int;				-- αντίθετος της μεταβλητής a
+	l1 <- a + b * (b / a);			-- αριθμητική έκφραση
+	l1 <- 4 + 50.0*x / 2.45;		-- αριθμητική έκφραση
+	l1 <- (a+1) % cube(b+3);		-- αριθμητική έκφραση με κλήση συνάρτησης
+	l1 <- (a <= b) and (d <= c);	-- τελεστές λογικοί με σχεσιακούς
+	l1 <- (c+a) != (2*d);			-- τελεστές αριθμητικοί με σχεσιακούς
+	l1 <- a + b[(k+1)*2];			-- αριθμητική έκφραση με πίνακα
 
 	f6(i1, i2, int3);
+
+    return l1;
+	
+	l1 <- 10;
+	l1 <- readInt();
 }
 
 const start <- (): int => {
-  
+  return;
 }

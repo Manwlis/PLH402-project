@@ -31,11 +31,39 @@ const f1 <- (x:real):real => {
 	let y <- f1(l1) : int;
 	return x; 
 }
-const f2 <- (s[]: string): int =>{ return; }
-const f3 <- (x:real):[]real => { return; }
-const f4 <- (x:real, y : int, s[]: string):[]bool => { return; }
-const f5 <- ():bool => { return; }
-const f6 <- (r1, r2:real, s[]: string):real => { return readInt(); }
+const f2 <- (s[]: string): int =>{ return; };
+const f3 <- (x:real):[]real => { return; };
+const f4 <- (x:real, y : int, s[]: string):[]bool => { return; };
+const f5 <- ():bool => { return; };
+
+const f6 <- (r1, r2:real, s[]: string):real => {
+
+	if n < 0 then
+		result <- prime(-n);
+	else
+		if n < 2 then
+			result <- false;
+		else 
+			if n = 2 then
+				result <- true;
+			else 
+				if n % 2 = 0 then
+					result <- false;
+				else
+					i <- 3;
+					isPrime <- true;
+					while isPrime and (i < n / 2) loop
+						isPrime <- n % i != 0;
+						i <- i + 2;
+					pool;
+					result <- isPrime;
+				fi;
+			fi;
+		fi;
+	fi;
+
+};
+
 const f7 <- (i1, i2, int3, iefcescv:int, s1[],s2: string):real => {
 
 
@@ -53,7 +81,7 @@ const f7 <- (i1, i2, int3, iefcescv:int, s1[],s2: string):real => {
 	
 	l1 <- 10;
 	l1 <- readInt();
-}
+};
 
 const start <- (): int => {
   return;

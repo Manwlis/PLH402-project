@@ -94,7 +94,8 @@
 
 ////// entoles
 %type <crepr> instr instr_func_call instr_assigment
-
+// elenxou kai broxou
+%type <crepr> stmt instr_control instr_loop
 ////// kuria domikh monada
 %type <crepr> body body_decl_list instr_list return
 
@@ -129,7 +130,7 @@ decl_list func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' 
 		puts(c_prologue); 
 		printf("/* program */ \n\n");
 		printf("%s\n\n", $1);
-		printf("int main() {\n%s\n} \n", $11);
+		printf("int main() {\n%s\n}\n", $11);
 	}
 }
 | decl_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}' { 
@@ -138,7 +139,7 @@ decl_list func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' 
 		puts(c_prologue); 
 		printf("/* program */ \n\n");
 		printf("%s\n\n", $1);
-		printf("int main() {\n%s\n} \n", $11);
+		printf("int main() {\n%s\n}\n", $11);
 	}
 }
 | KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' body '}' { 
@@ -147,7 +148,7 @@ decl_list func_list KW_CONST KW_START ASSIGN_OP '(' ')' ':' KW_INT ARROW_OP '{' 
 		if(yyerror_count==0) {
 			puts(c_prologue); 
 			printf("/* program */ \n\n");
-			printf("int main() {\n%s\n} \n", $10);
+			printf("int main() {\n%s\n}\n", $10);
 		}
 }
 ;
@@ -208,7 +209,6 @@ let_decl_list ',' let_decl_init     { $$ = template("%s, %s", $1, $3 );}
 let_decl_init:
 decl_id                             { $$ = $1; }								// i
 | decl_id ASSIGN_OP expr            { $$ = template("%s = %s", $1, $3); }		// i <- 1 / i <- 1.1
-| decl_id ASSIGN_OP STRING          { $$ = template("%s = %s", $1, $3); }		// i <- "message"
 | decl_id ASSIGN_OP table_init      { $$ = template("%s = %s", $1, $3); }		// i[2] <- {1 , 2}
 ;
 
@@ -222,7 +222,6 @@ const_decl_list ',' const_decl_init { $$ = template("%s, %s", $1, $3 );}
 ;
 const_decl_init:
 decl_id   ASSIGN_OP expr            { $$ = template("%s = %s", $1, $3); }		// i <- 1 / i <- 1.1
-| decl_id ASSIGN_OP STRING          { $$ = template("%s = %s", $1, $3); }		// i <- "message"
 | decl_id ASSIGN_OP table_init      { $$ = template("%s = %s", $1, $3); }		// i[2] <- {1 , 2}
 ;
 //////// dhlwshs dedomenwn telos ////////
@@ -234,13 +233,12 @@ func_list func                      { $$ = template("%s\n\n%s", $1, $2); }
 | func                              { $$ = $1; }
 ;
 func: 
-KW_CONST decl_id ASSIGN_OP '(' func_param_list ')' ':' type_spec ARROW_OP '{' body '}'	{
-	$$ = template("%s %s (%s) {\n%s\n}", $8, $2, $5, $11);
-}
+KW_CONST decl_id ASSIGN_OP '(' func_param_list ')' ':' type_spec ARROW_OP '{' body '}' ';'
+{ $$ = template("%s %s (%s) {\n%s\n}", $8, $2, $5, $11); }
 ;
 
 func_param_list:
-{ $$="";}
+                                    { $$="";}
 | func_param_list ',' func_param    { $$ = template("%s, %s", $1, $3); }
 | func_param                        { $$ = $1; }
 ;
@@ -322,6 +320,7 @@ term '+' expr                       { $$ = template("%s + %s", $1, $3); }		// pr
 term:
 POS_INT                             { $$ = $1; }								// int
 | POS_REAL                          { $$ = $1; }								// real
+| STRING                            { $$ = $1; }								// string
 | bool                              { $$ = $1; }								// bool
 | decl_id                           { $$ = $1; }								// metablhth
 | func_call                         { $$ = $1; }								// kalesma shnarthshs
@@ -350,8 +349,10 @@ func_stm ',' expr                   { $$ = template("%s, %s", $1, $3); }
 
 //////// entoles ////////
 instr:
-instr_func_call	                    { $$ = $1; }
+instr_func_call                     { $$ = $1; }
 | instr_assigment                   { $$ = $1; }
+| instr_control                     { $$ = $1; }
+| instr_loop                        { $$ = $1; }
 | return                            { $$ = $1; }
 ;
 
@@ -361,13 +362,53 @@ decl_id ASSIGN_OP expr ';'          { $$ = template("%s = %s;", $1, $3); }
 ;
 
 // entoles elenxou
+instr_control:
+KW_IF expr KW_THEN stmt KW_ELSE stmt KW_FI ';'
+{ $$ = template("if (%s) {\n%s    }\n    else {\n%s    }\n", $2, $4, $6); }
+| KW_IF expr KW_THEN stmt KW_FI ';' 
+{ $$ = template("if (%s) {\n%s\n    }\n", $2, $4); }
+;
 
+stmt:
+instr_list                          {
+	
+	// save the strings
+	char *statement = strdup($1);
 
+	// count lines. There is at least one.
+	int count = 1;
+	int i = 0;
+	while (statement[i] != '\0') {
+		if (statement[i] == '\n')
+			count++;
+		i++;
+	}
+	// ipologismos mege8ous telikou string kai malloc
+	char *final_string = (char *) malloc(strlen(statement) + (count * 4));
+
+	// break string to individual parameters
+	char *temp = strtok(statement, "\n");
+	while( temp != NULL){
+
+		// concat parameters with their types and create C format
+		strcat(final_string, "    ");
+		strcat(final_string, temp);
+		strcat(final_string, "\n");
+		//next line
+		temp = strtok(NULL, "\n");
+	}
+
+	// return complete string
+	$$ = strdup(final_string);
+	free(final_string);
+}
+;
 
 // entoles broxou
-
-
-
+instr_loop:
+KW_WHILE expr KW_LOOP stmt KW_POOL ';'
+{ $$ = template("while (%s) {\n%s\n    }\n", $2, $4); }
+;
 
 // entoles epistrofhs
 return:

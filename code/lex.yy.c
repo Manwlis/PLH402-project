@@ -1105,12 +1105,12 @@ return KW_FALSE;
 case 44:
 YY_RULE_SETUP
 #line 149 "mylexer.l"
-yyerror("\nSyntax error: Illegal int format:         %s\nLine %3d: %s\n\n", yytext, line_num, line_buffer);
+yyerror("\nLexical error: Illegal int format:         %s", yytext);
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
 #line 150 "mylexer.l"
-yyerror("\nSyntax error: Illegal real format:        %s\nLine %3d: %s\n\n", yytext, line_num, line_buffer);
+yyerror("\nLexical error: Illegal real format:        %s", yytext);
 	YY_BREAK
 /***** ids *****/
 case 46:
@@ -1144,7 +1144,7 @@ case 51:
 YY_RULE_SETUP
 #line 162 "mylexer.l"
 { 
-									yyerror("\nSyntax error: Unclosed string.\nLine %3d: %s\n(expected \" )\n\n", line_num, line_buffer);
+									yyerror("\nLexical error: Unclosed string.\n(expected \" )");
 									BEGIN(INITIAL);
 									unput('\n');	/* rescan \n to buffer the next line */
 								}
@@ -1152,7 +1152,7 @@ YY_RULE_SETUP
 case YY_STATE_EOF(const_string):
 #line 167 "mylexer.l"
 {
-									yyerror("\nSyntax error: Unclosed string.\nLine %3d: %s\n(expected \" )\n\n", line_num, line_buffer);
+									yyerror("\nLexical error: Unclosed string.\n(expected \" )");
 									BEGIN(INITIAL);
 									return EOF;
 								}
@@ -1162,7 +1162,7 @@ case YY_STATE_EOF(const_string):
 case 52:
 YY_RULE_SETUP
 #line 176 "mylexer.l"
-yyerror("\nSyntax error: Comment doesn't start.\nLine %3d: %s\n(expected (* ))\n\n", line_num, line_buffer);
+yyerror("\nLexical error: Comment doesn't start.\n(expected (* ))");
 	YY_BREAK
 /* Line comment */
 case 53:
@@ -1208,7 +1208,7 @@ YY_RULE_SETUP
 case YY_STATE_EOF(comment):
 #line 194 "mylexer.l"
 {
-									yyerror("\nSyntax error: Unclosed comment in line %d.\nComment started in line: %d\n(expected *) )\n\n", line_num, comment_start_line);
+									yyerror("\nSyntax error: Unclosed comment in line %d\n(expected *)");
 									BEGIN(INITIAL);
 									return EOF;
 								}
@@ -1240,7 +1240,7 @@ return EOF;
 case 61:
 YY_RULE_SETUP
 #line 218 "mylexer.l"
-yyerror("\nSyntax error: Unrecognized Token:         %s\nLine %3d: %s\n\n", yytext, line_num, line_buffer);
+yyerror("\nLexical error: Unrecognized Token:         %s", yytext);
 	YY_BREAK
 /* Creates the buffer for the first line. It is not used again */
 case 62:

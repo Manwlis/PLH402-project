@@ -5,7 +5,6 @@
 #include "cgen.h"
 
 extern int line_num;
-extern int comment_start_line;
 
 extern char *line_buffer;
 
@@ -54,7 +53,7 @@ char* template(const char* pat, ...)
 
 	fprintf(stderr,"\n");
 	
-	printf("%s \n", line_buffer);
+	printf("%s \n\n\n", line_buffer);
 
   yyerror_count++;
  }

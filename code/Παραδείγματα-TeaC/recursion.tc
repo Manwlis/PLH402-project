@@ -1,0 +1,26 @@
+ 
+const fact <- (n:int):real =>{
+	if n <= 1 then
+		return 1;
+	else
+		return (n * fact(n-1));
+	fi;
+};
+
+const start <- (): int => {
+
+	let i <- 1 : int;
+	let k <- readInt() : int;
+
+	while i <= k loop
+		writeString("\n");
+		writeInt(i);
+		writeString("! = ");
+		writeReal(fact(i));
+		writeString("\n");
+
+		i <- i + 1;
+	pool;
+
+	return 0;
+}

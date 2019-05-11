@@ -1,17 +1,17 @@
--- A piece of TeaC code for demonstration purposes
 
-const N <- 100: int;
+
+const N <- 100;									-- missing type
 
 let a, b: int;
 
 const cube <- (i: int): int => {
-  return i*i*i;
+  return i*i*i > 3;								-- unrecognized token
 };    
    
 const add <- (n: int, k: int): int => {
   let j: int;
   
-  j <- (N-n) + cube(k);
+  j <- (N-n + cube(k);							-- unclosed parenthesis
   writeInt(j);
   return j;
 };
@@ -22,7 +22,7 @@ const add <- (n: int, k: int): int => {
 const start <- (): int => { 
   a <- readInt();
   b <- readInt();
-  add(a, b); -- Here you can see some dummy comments!
+  add(a, b);
  	         
  return 0;
 }

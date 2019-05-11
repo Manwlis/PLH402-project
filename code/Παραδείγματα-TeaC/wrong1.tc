@@ -1,0 +1,26 @@
+ 
+const fact <- (let n:int):real =>{	-- la8os orismos parametrwn
+	if n <= 1 then
+		return 1;
+	else
+		return (n * fact(n-1));
+	fi;
+};
+
+let start <- (): int => {			-- la8os orismos start
+
+	let i <- 1 : int;
+	let k <- readInt() : int;
+
+	while i <= k loop
+		writeString("\n");
+		writeInt(i);
+		writeString("! = ");
+		writeReal(fact(i));
+		writeString("\n");
+
+		i <- i + 1;
+	pool							-- missing ;
+
+	return 0;
+}

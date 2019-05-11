@@ -1973,7 +1973,7 @@ yyreduce:
 
   case 86:
 #line 369 "myparser.y" /* yacc.c:1646  */
-    { (yyval.crepr) = template("if (%s) {\n%s\n    }\n", (yyvsp[-4].crepr), (yyvsp[-2].crepr)); }
+    { (yyval.crepr) = template("if (%s) {\n%s    }\n", (yyvsp[-4].crepr), (yyvsp[-2].crepr)); }
 #line 1978 "myparser.tab.c" /* yacc.c:1646  */
     break;
 
@@ -2016,7 +2016,7 @@ yyreduce:
 
   case 88:
 #line 410 "myparser.y" /* yacc.c:1646  */
-    { (yyval.crepr) = template("while (%s) {\n%s\n    }\n", (yyvsp[-4].crepr), (yyvsp[-2].crepr)); }
+    { (yyval.crepr) = template("while (%s) {\n%s    }\n", (yyvsp[-4].crepr), (yyvsp[-2].crepr)); }
 #line 2021 "myparser.tab.c" /* yacc.c:1646  */
     break;
 

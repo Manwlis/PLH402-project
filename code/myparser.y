@@ -170,7 +170,7 @@ KW_INT                              { $$ = "int"; }
 
 // ids
 decl_id: 
-IDENTIFIER { $$ = $1; } 
+IDENTIFIER                          { $$ = $1; } 
 | IDENTIFIER '[' ']'                { $$ = template("*%s", $1); /* pointer */}
 | table_id                          { $$ = $1; } ///////////////////////////isws prepei na allaksei se akeraia sta8era to [ expr ]
 ;
@@ -366,7 +366,7 @@ instr_control:
 KW_IF expr KW_THEN stmt KW_ELSE stmt KW_FI ';'
 { $$ = template("if (%s) {\n%s    }\n    else {\n%s    }\n", $2, $4, $6); }
 | KW_IF expr KW_THEN stmt KW_FI ';' 
-{ $$ = template("if (%s) {\n%s\n    }\n", $2, $4); }
+{ $$ = template("if (%s) {\n%s    }\n", $2, $4); }
 ;
 
 stmt:
@@ -407,7 +407,7 @@ instr_list                          {
 // entoles broxou
 instr_loop:
 KW_WHILE expr KW_LOOP stmt KW_POOL ';'
-{ $$ = template("while (%s) {\n%s\n    }\n", $2, $4); }
+{ $$ = template("while (%s) {\n%s    }\n", $2, $4); }
 ;
 
 // entoles epistrofhs

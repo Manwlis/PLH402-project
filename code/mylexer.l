@@ -145,8 +145,8 @@ COMMENT_END				"*)"
 {KW_TRUE}						return KW_TRUE;
 {KW_FALSE}						return KW_FALSE;
 	/* illegal formats */
-{ILLEGAL_FORMAT_INT}			yyerror("\nSyntax error: Illegal int format:         %s\nLine %3d: %s\n\n", yytext, line_num, line_buffer);
-{ILLEGAL_FORMAT_REAL}			yyerror("\nSyntax error: Illegal real format:        %s\nLine %3d: %s\n\n", yytext, line_num, line_buffer);
+{ILLEGAL_FORMAT_INT}			yyerror("\nLexical error: Illegal int format:         %s", yytext);
+{ILLEGAL_FORMAT_REAL}			yyerror("\nLexical error: Illegal real format:        %s", yytext);
 
 
 	/***** ids *****/
@@ -159,12 +159,12 @@ COMMENT_END				"*)"
 <const_string>{STRING_OP}		{ BEGIN(INITIAL); yylval.crepr = strdup(yytext); return STRING; }
 <const_string>[^\"\n\\]*		yymore();	/* eat anything else */
 <const_string>\n				{ 
-									yyerror("\nSyntax error: Unclosed string.\nLine %3d: %s\n(expected \" )\n\n", line_num, line_buffer);
+									yyerror("\nLexical error: Unclosed string.\n(expected \" )");
 									BEGIN(INITIAL);
 									unput('\n');	/* rescan \n to buffer the next line */
 								}
 <const_string><<EOF>>			{
-									yyerror("\nSyntax error: Unclosed string.\nLine %3d: %s\n(expected \" )\n\n", line_num, line_buffer);
+									yyerror("\nLexical error: Unclosed string.\n(expected \" )");
 									BEGIN(INITIAL);
 									return EOF;
 								}
@@ -172,7 +172,7 @@ COMMENT_END				"*)"
 
 	/***** comments *****/
 	/* adespoto telos sxoliou */
-{COMMENT_END}					yyerror("\nSyntax error: Comment doesn't start.\nLine %3d: %s\n(expected (* ))\n\n", line_num, line_buffer);
+{COMMENT_END}					yyerror("\nLexical error: Comment doesn't start.\n(expected (* ))");
 
 	/* Line comment */
 {LINE_COMM}.*
@@ -191,7 +191,7 @@ COMMENT_END				"*)"
 								}
 	/* EOF in comment */
 <comment><<EOF>>				{
-									yyerror("\nSyntax error: Unclosed comment in line %d.\nComment started in line: %d\n(expected *) )\n\n", line_num, comment_start_line);
+									yyerror("\nSyntax error: Unclosed comment in line %d\n(expected *)");
 									BEGIN(INITIAL);
 									return EOF;
 								}
@@ -214,7 +214,7 @@ COMMENT_END				"*)"
 
 
 	/***** Unrecognized Token *****/
-.								yyerror("\nSyntax error: Unrecognized Token:         %s\nLine %3d: %s\n\n", yytext, line_num, line_buffer);
+.								yyerror("\nLexical error: Unrecognized Token:         %s", yytext);
 
 
 	/* Creates the buffer for the first line. It is not used again */

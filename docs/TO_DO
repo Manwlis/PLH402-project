@@ -1,10 +1,6 @@
-tests gia eksetash
-deilwsh pinakwn dior8wsh
-swma main xwris return mallon
-h main 8elei upoxrewtiko kai diaforetiko return
 
 bison -d -v -r all myparser.y
 flex mylexer.l
 gcc -o mycomp myparser.tab.c lex.yy.c cgen.c -lfl
-./mycomp < /home/manwlhs/Documents/GitHub/PLH402-project/code/Παραδείγματα-TeaC/myprog.tc > ex.c
+./mycomp < ./myprog.tc > ex.c
 
